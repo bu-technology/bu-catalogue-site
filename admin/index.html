@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beverage Union — Admin</title>
+<style>
+@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Light.woff2') format('woff2');font-weight:300;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Regular.woff2') format('woff2');font-weight:400;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Medium.woff2') format('woff2');font-weight:500;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Semibold.woff2') format('woff2');font-weight:600;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Bold.woff2') format('woff2');font-weight:700;font-display:swap;}
+
+:root{
+  --charcoal:#1A1A1A; --charcoal-raised:#242322; --charcoal-hover:#2E2C2A;
+  --steel:#5D8DA0; --cream:#F5EDD8; --parchment:#FAF9F7;
+  --plum:#6B3B7A; --orange:#CC5500;
+  --line: rgba(250,249,247,0.12); --line-strong: rgba(250,249,247,0.24);
+  --text-dim: rgba(250,249,247,0.56); --text-faint: rgba(250,249,247,0.4);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--charcoal);color:var(--parchment);font-family:'General Sans',sans-serif;}
+input,textarea,select,button{font-family:inherit;}
+button{cursor:pointer;}
+
+/* ---------- gate ---------- */
+#gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--charcoal);z-index:100;}
+.gate-box{width:min(88vw,340px);text-align:center;}
+.gate-box img{width:64px;height:auto;margin-bottom:28px;opacity:0.9;}
+.gate-box p.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 10px;}
+.gate-box h1{font-size:24px;font-weight:600;margin:0 0 24px;letter-spacing:-0.01em;}
+#passInput{width:100%;background:transparent;border:1px solid var(--line-strong);color:var(--parchment);padding:13px 16px;border-radius:4px;font-size:15px;text-align:center;outline:none;}
+#passInput:focus{border-color:var(--steel);}
+#gateError{color:var(--orange);font-size:13px;margin-top:12px;min-height:18px;}
+#gateSubmit{margin-top:16px;width:100%;padding:13px;background:var(--steel);color:var(--charcoal);border:none;border-radius:4px;font-size:14px;font-weight:600;}
+#gateSubmit:hover{opacity:0.85;}
+
+/* ---------- shell ---------- */
+#app{display:none;}
+#topbar{position:sticky;top:0;background:var(--charcoal);border-bottom:1px solid var(--line);z-index:10;}
+.topbar-inner{max-width:900px;margin:0 auto;padding:20px 24px 0;}
+.brand-row{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.brand-row img{width:28px;height:auto;}
+.brand-row p{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0;}
+.tabs{display:flex;gap:4px;}
+.tab-btn{background:none;border:none;color:var(--text-dim);padding:12px 4px;margin-right:24px;font-size:14px;font-weight:500;border-bottom:2px solid transparent;transition:all .2s;}
+.tab-btn.active{color:var(--parchment);border-bottom-color:var(--steel);}
+main{max-width:900px;margin:0 auto;padding:36px 24px 100px;}
+.pane{display:none;}
+.pane.active{display:block;}
+
+.pane-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.pane-header h1{font-size:22px;font-weight:600;margin:0;}
+.pane-header .count{color:var(--text-dim);font-weight:400;font-size:15px;}
+.btn-primary{background:var(--steel);color:var(--charcoal);border:none;padding:11px 20px;border-radius:6px;font-size:13px;font-weight:600;}
+.btn-primary:hover{opacity:0.88;}
+.btn-ghost{background:transparent;color:var(--parchment);border:1px solid var(--line-strong);padding:11px 20px;border-radius:6px;font-size:13px;font-weight:600;}
+.btn-ghost:hover{border-color:var(--steel);}
+
+/* ---------- drinks grid ---------- */
+#drinksGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;}
+.drink-card{background:var(--charcoal-raised);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.drink-card .thumb{aspect-ratio:1/1;background:var(--cream);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.drink-card .thumb img{width:100%;height:100%;object-fit:cover;}
+.drink-card .body{padding:14px;}
+.drink-card .name{font-size:15px;font-weight:600;margin:0 0 8px;}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.pill{font-size:10.5px;font-weight:600;letter-spacing:.03em;padding:3px 9px;border-radius:999px;}
+.pill.romance{background:rgba(107,59,122,0.22);color:#c99fd6;}
+.pill.euphoria{background:rgba(204,85,0,0.2);color:#f0a869;}
+.pill.type{background:rgba(93,141,160,0.2);color:#9ec4d4;}
+.notes-line{font-size:12px;color:var(--text-dim);margin:0 0 10px;min-height:16px;}
+.card-actions{display:flex;justify-content:flex-end;}
+.icon-btn{background:none;border:none;color:var(--text-dim);font-size:12px;padding:4px 8px;}
+.icon-btn:hover{color:var(--orange);}
+#emptyState{color:var(--text-dim);font-size:14px;padding:40px 0;text-align:center;}
+
+/* ---------- form (add drink) ---------- */
+.field{margin-bottom:26px;max-width:520px;}
+.field label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);font-weight:600;margin-bottom:10px;}
+.field input[type=text], .field textarea{width:100%;background:var(--charcoal-raised);border:1px solid var(--line);color:var(--parchment);padding:13px 15px;border-radius:6px;font-size:15px;outline:none;}
+.field input[type=text]:focus, .field textarea:focus{border-color:var(--steel);}
+.field textarea{resize:vertical;min-height:90px;line-height:1.55;}
+.segmented{display:flex;gap:10px;}
+.seg-btn{flex:1;padding:14px;border-radius:6px;border:1px solid var(--line);background:var(--charcoal-raised);color:var(--text-dim);font-size:14px;font-weight:600;text-align:left;}
+.seg-btn small{display:block;font-weight:400;font-size:11px;margin-top:3px;opacity:0.75;}
+.seg-btn.active[data-bean="Romance"]{border-color:var(--plum);background:rgba(107,59,122,0.18);color:var(--parchment);}
+.seg-btn.active[data-bean="Euphoria"]{border-color:var(--orange);background:rgba(204,85,0,0.18);color:var(--parchment);}
+.type-row{display:flex;flex-wrap:wrap;gap:8px;}
+.type-chip{padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text-dim);font-size:13px;}
+.type-chip.active{border-color:var(--steel);color:var(--parchment);background:rgba(93,141,160,0.16);}
+.tag-input-wrap{display:flex;flex-wrap:wrap;gap:8px;background:var(--charcoal-raised);border:1px solid var(--line);border-radius:6px;padding:10px 12px;max-width:520px;}
+.tag-input-wrap:focus-within{border-color:var(--steel);}
+.tag-chip{display:flex;align-items:center;gap:6px;background:rgba(93,141,160,0.2);color:var(--parchment);padding:5px 6px 5px 12px;border-radius:999px;font-size:13px;}
+.tag-chip button{background:none;border:none;color:var(--text-dim);font-size:15px;line-height:1;padding:2px 6px;}
+#tagText{flex:1;min-width:90px;background:none;border:none;color:var(--parchment);font-size:14px;outline:none;padding:5px;}
+.dropzone{max-width:520px;border:1.5px dashed var(--line-strong);border-radius:8px;padding:28px;text-align:center;position:relative;}
+.dropzone.drag{border-color:var(--steel);background:rgba(93,141,160,0.08);}
+.dropzone p{margin:0;font-size:14px;color:var(--text-dim);}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+#previewWrap{display:none;text-align:center;margin-top:14px;}
+#previewWrap img{max-width:160px;max-height:160px;border-radius:8px;object-fit:contain;background:var(--cream);}
+#previewWrap p{font-size:12px;color:var(--text-dim);margin-top:8px;}
+#submitBtn{max-width:520px;width:100%;padding:16px;background:var(--steel);color:var(--charcoal);border:none;border-radius:6px;font-size:15px;font-weight:600;margin-top:8px;}
+#submitBtn:disabled{opacity:0.5;cursor:not-allowed;}
+#formMsg{font-size:13px;margin-top:14px;min-height:18px;}
+#formMsg.err{color:var(--orange);}
+#formMsg.ok{color:#8fbf9f;}
+
+/* ---------- catalogues ---------- */
+.cat-card{display:flex;align-items:center;justify-content:space-between;background:var(--charcoal-raised);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;}
+.cat-card .cat-name{font-size:15px;font-weight:600;margin:0 0 4px;}
+.cat-card .cat-desc{font-size:13px;color:var(--text-dim);margin:0 0 6px;max-width:440px;}
+.cat-card .cat-meta{font-size:12px;color:var(--text-faint);margin:0;}
+.copy-btn{background:transparent;border:1px solid var(--line-strong);color:var(--parchment);padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;}
+.copy-btn:hover{border-color:var(--steel);}
+#builderPanel{display:none;background:var(--charcoal-raised);border:1px solid var(--line);border-radius:10px;padding:22px;margin-top:20px;}
+.picker-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.picker-chip{padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text-dim);font-size:12.5px;font-weight:600;}
+.picker-chip.active{border-color:var(--steel);color:var(--parchment);background:rgba(93,141,160,0.16);}
+.picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;max-height:420px;overflow-y:auto;padding:4px;margin-bottom:20px;}
+.pick-card{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;background:var(--charcoal-hover);transition:border-color .15s ease;}
+.pick-card.selected{border-color:var(--steel);}
+.pick-card .thumb{aspect-ratio:1/1;background:var(--cream);}
+.pick-card .thumb img{width:100%;height:100%;object-fit:cover;}
+.pick-card .pname{font-size:12.5px;font-weight:600;padding:8px 9px;margin:0;}
+.pick-card .check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--steel);color:var(--charcoal);display:none;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.pick-card.selected .check{display:flex;}
+
+.divider{border:none;border-top:1px solid var(--line);margin:8px 0 28px;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <img src="../assets/logos/bu-mark-light.svg" alt="Beverage Union">
+    <p class="eyebrow">Internal tool</p>
+    <h1>Enter the passcode</h1>
+    <input type="password" id="passInput" placeholder="••••••" autocomplete="off">
+    <button id="gateSubmit">Continue</button>
+    <p id="gateError"></p>
+  </div>
+</div>
+
+<div id="app">
+  <div id="topbar">
+    <div class="topbar-inner">
+      <div class="brand-row">
+        <img src="../assets/logos/bu-mark-light.svg" alt="">
+        <p>Beverage Union · Admin</p>
+      </div>
+      <div class="tabs" style="justify-content:space-between;display:flex;">
+        <div>
+          <button class="tab-btn active" data-tab="drinks">Drinks</button>
+          <button class="tab-btn" data-tab="add">Add drink</button>
+          <button class="tab-btn" data-tab="catalogues">Catalogues</button>
+        </div>
+        <a href="../" style="font-size:13px;color:var(--text-dim);text-decoration:none;padding:12px 4px;">View site ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <!-- DRINKS -->
+    <section class="pane active" id="pane-drinks">
+      <div class="pane-header">
+        <h1>Drinks <span class="count" id="drinkCount"></span></h1>
+        <button class="btn-primary" id="goAddBtn">+ Add drink</button>
+      </div>
+      <div id="drinksGrid"></div>
+      <div id="emptyState" style="display:none;">No drinks yet — add your first one.</div>
+    </section>
+
+    <!-- ADD DRINK -->
+    <section class="pane" id="pane-add">
+      <div class="pane-header"><h1>Add a drink</h1></div>
+      <form id="drinkForm">
+        <div class="field"><label for="dName">Name</label><input type="text" id="dName" placeholder="Terra Cloud" required></div>
+        <div class="field"><label for="dDesc">Description</label><textarea id="dDesc" placeholder="A striking, layered fusion of vibrant blue pea coconut water..." required></textarea></div>
+        <div class="field">
+          <label>Bean</label>
+          <div class="segmented" id="beanSelect">
+            <button type="button" class="seg-btn" data-bean="Romance">Romance<small>Connection · warmth</small></button>
+            <button type="button" class="seg-btn" data-bean="Euphoria">Euphoria<small>Stimulation · lift</small></button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <div class="type-row" id="typeSelect">
+            <button type="button" class="type-chip" data-type="Cold Brew">Cold Brew</button>
+            <button type="button" class="type-chip" data-type="Espresso">Espresso</button>
+            <button type="button" class="type-chip" data-type="Matcha">Matcha</button>
+            <button type="button" class="type-chip" data-type="Iced">Iced</button>
+            <button type="button" class="type-chip" data-type="Dessert">Dessert</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="tagText">Tasting notes</label>
+          <div class="tag-input-wrap" id="tagWrap"><input type="text" id="tagText" placeholder="Type a note and press Enter"></div>
+        </div>
+        <div class="field">
+          <label>Drink photo</label>
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept="image/*">
+            <p id="dropText">Drag an image here, or click to choose</p>
+          </div>
+          <div id="previewWrap"><img id="previewImg" alt=""><p id="fileName"></p></div>
+        </div>
+        <button type="submit" id="submitBtn">Add drink</button>
+        <p id="formMsg"></p>
+      </form>
+    </section>
+
+    <!-- CATALOGUES -->
+    <section class="pane" id="pane-catalogues">
+      <div class="pane-header">
+        <h1>Catalogues <span class="count" id="catCount"></span></h1>
+        <button class="btn-ghost" id="newCatBtn">+ New catalogue</button>
+      </div>
+      <div id="cataloguesList"></div>
+      <div id="catEmpty" style="display:none;color:var(--text-dim);font-size:14px;padding:20px 0;">No catalogues yet.</div>
+
+      <div id="builderPanel">
+        <div class="field" style="max-width:none;"><label for="catName">Catalogue name</label><input type="text" id="catName" placeholder="e.g. The Ritz — August tasting"></div>
+        <div class="field" style="max-width:none;"><label for="catDesc">Description <span style="text-transform:none;font-weight:400;">(optional)</span></label><textarea id="catDesc" placeholder="A short line the client sees under the title" style="min-height:60px;"></textarea></div>
+        <div class="field" style="max-width:none;">
+          <label>Choose drinks <span id="pickCount" style="text-transform:none;font-weight:400;color:var(--steel);"></span></label>
+          <div class="picker-filters" id="pickerFilters"></div>
+          <div class="picker-grid" id="drinkPicker"></div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-primary" id="saveCatBtn">Save catalogue</button>
+          <button class="btn-ghost" id="cancelCatBtn" type="button">Cancel</button>
+        </div>
+        <p id="catMsg" style="font-size:13px;margin-top:12px;min-height:18px;"></p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = "https://dmxpltiomvluuooojayh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRteHBsdGlvbXZsdXVvb29qYXloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwNDQ2MzgsImV4cCI6MjEwMjYyMDYzOH0.t8zKwbbO05VhAaJFuRZBTMmkrHffZWgOwLWtkznnTFY";
+const PASSCODE = "BU@123";
+let allDrinks = [];
+
+function apiHeaders(extra){
+  return Object.assign({ 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }, extra||{});
+}
+function friendlyError(err){
+  if(location.protocol === 'file:'){
+    return "This page was opened directly from a file (file://) — the database blocks that for security. It needs to be served from a real URL.";
+  }
+  return err.message || "Something went wrong.";
+}
+
+// ---------- gate ----------
+const gate = document.getElementById('gate');
+const app = document.getElementById('app');
+const passInput = document.getElementById('passInput');
+const gateError = document.getElementById('gateError');
+function tryUnlock(){
+  if(passInput.value === PASSCODE){
+    sessionStorage.setItem('bu_admin_ok','1');
+    gate.style.display='none'; app.style.display='block';
+    boot();
+  } else { gateError.textContent = "That's not it. Try again."; }
+}
+document.getElementById('gateSubmit').addEventListener('click', tryUnlock);
+passInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+if(sessionStorage.getItem('bu_admin_ok') === '1'){
+  gate.style.display='none'; app.style.display='block'; setTimeout(boot,0);
+}
+
+function boot(){ loadDrinks(); loadCatalogues(); }
+
+// ---------- tabs ----------
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
+});
+document.getElementById('goAddBtn').addEventListener('click', ()=> switchTab('add'));
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.pane').forEach(p=> p.classList.toggle('active', p.id === 'pane-'+tab));
+}
+
+// ---------- load drinks ----------
+async function loadDrinks(){
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,tasting_notes,created_at&order=created_at.desc', { headers: apiHeaders() });
+    if(!res.ok) throw new Error('Could not load drinks (' + res.status + ')');
+    allDrinks = await res.json();
+    renderDrinks();
+  } catch(err){
+    console.error(err);
+    document.getElementById('drinksGrid').innerHTML = '';
+    document.getElementById('emptyState').style.display='block';
+    document.getElementById('emptyState').textContent = friendlyError(err);
+  }
+}
+function renderDrinks(){
+  const grid = document.getElementById('drinksGrid');
+  const empty = document.getElementById('emptyState');
+  document.getElementById('drinkCount').textContent = allDrinks.length ? '(' + allDrinks.length + ')' : '';
+  grid.innerHTML = '';
+  if(allDrinks.length === 0){ empty.style.display='block'; empty.textContent='No drinks yet — add your first one.'; return; }
+  empty.style.display='none';
+  allDrinks.forEach(d=>{
+    const card = document.createElement('div');
+    card.className='drink-card';
+    const beanClass = d.bean === 'Romance' ? 'romance' : 'euphoria';
+    const notes = (d.tasting_notes||[]).join(', ');
+    card.innerHTML = `
+      <div class="thumb"><img src="${d.image_url}" alt="${d.name}"></div>
+      <div class="body">
+        <p class="name">${d.name}</p>
+        <div class="pill-row"><span class="pill ${beanClass}">${d.bean}</span><span class="pill type">${d.type}</span></div>
+        <p class="notes-line">${notes}</p>
+        <div class="card-actions"><button class="icon-btn" data-id="${d.id}">Delete</button></div>
+      </div>`;
+    card.querySelector('.icon-btn').addEventListener('click', ()=> deleteDrink(d.id, d.name));
+    grid.appendChild(card);
+  });
+}
+async function deleteDrink(id, name){
+  if(!confirm('Delete "' + name + '"? This cannot be undone.')) return;
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=eq.' + id, { method:'DELETE', headers: apiHeaders() });
+    if(!res.ok) throw new Error('Delete failed (' + res.status + ')');
+    loadDrinks();
+  } catch(err){ alert(friendlyError(err)); }
+}
+
+// ---------- bean / type selectors ----------
+let selectedBean = null, selectedType = null;
+document.querySelectorAll('#beanSelect .seg-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#beanSelect .seg-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); selectedBean = btn.dataset.bean;
+  });
+});
+document.querySelectorAll('#typeSelect .type-chip').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#typeSelect .type-chip').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); selectedType = btn.dataset.type;
+  });
+});
+
+// ---------- tags ----------
+let tags = [];
+const tagWrap = document.getElementById('tagWrap');
+const tagText = document.getElementById('tagText');
+function renderTags(){
+  tagWrap.querySelectorAll('.tag-chip').forEach(el=>el.remove());
+  tags.forEach((t,i)=>{
+    const chip = document.createElement('span'); chip.className='tag-chip';
+    chip.innerHTML = t + ' <button type="button" aria-label="Remove">×</button>';
+    chip.querySelector('button').addEventListener('click', ()=>{ tags.splice(i,1); renderTags(); });
+    tagWrap.insertBefore(chip, tagText);
+  });
+}
+tagText.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); const v=tagText.value.trim(); if(v){ tags.push(v); tagText.value=''; renderTags(); } }
+});
+
+// ---------- file drop ----------
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const previewWrap = document.getElementById('previewWrap');
+const previewImg = document.getElementById('previewImg');
+const fileNameEl = document.getElementById('fileName');
+let selectedFile = null;
+function handleFile(f){
+  if(!f) return;
+  selectedFile = f;
+  previewImg.src = URL.createObjectURL(f);
+  fileNameEl.textContent = f.name;
+  previewWrap.style.display='block';
+}
+fileInput.addEventListener('change', e=> handleFile(e.target.files[0]));
+dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e=>{ e.preventDefault(); dropzone.classList.remove('drag'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+// ---------- submit add-drink ----------
+const form = document.getElementById('drinkForm');
+const submitBtn = document.getElementById('submitBtn');
+const formMsg = document.getElementById('formMsg');
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  formMsg.className=''; formMsg.textContent='';
+  const name = document.getElementById('dName').value.trim();
+  const description = document.getElementById('dDesc').value.trim();
+  if(!name || !description){ return showErr('Name and description are required.'); }
+  if(!selectedBean){ return showErr('Choose a bean: Romance or Euphoria.'); }
+  if(!selectedType){ return showErr('Choose a type.'); }
+  if(!selectedFile){ return showErr('Add a photo of the drink.'); }
+
+  submitBtn.disabled = true; submitBtn.textContent = 'Adding…';
+  try{
+    const safeName = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const fileExt = (selectedFile.name.split('.').pop() || 'png').toLowerCase();
+    const filePath = safeName + '-' + Date.now() + '.' + fileExt;
+    const uploadRes = await fetch(SUPABASE_URL + '/storage/v1/object/drink-images/' + filePath, {
+      method:'POST', headers: apiHeaders({'Content-Type': selectedFile.type || 'image/png'}), body: selectedFile
+    });
+    if(!uploadRes.ok) throw new Error('Image upload failed (' + uploadRes.status + ')');
+    const imageUrl = SUPABASE_URL + '/storage/v1/object/public/drink-images/' + filePath;
+    const insertRes = await fetch(SUPABASE_URL + '/rest/v1/drinks', {
+      method:'POST', headers: apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
+      body: JSON.stringify({ name, description, image_url: imageUrl, bean: selectedBean, type: selectedType, tasting_notes: tags })
+    });
+    if(!insertRes.ok) throw new Error('Saving drink failed (' + insertRes.status + ')');
+    formMsg.className='ok'; formMsg.textContent = name + ' was added.';
+    form.reset(); selectedBean=null; selectedType=null; tags=[]; selectedFile=null;
+    document.querySelectorAll('.seg-btn, .type-chip').forEach(b=>b.classList.remove('active'));
+    renderTags(); previewWrap.style.display='none';
+    loadDrinks();
+  } catch(err){ showErr(friendlyError(err)); }
+  finally{ submitBtn.disabled = false; submitBtn.textContent = 'Add drink'; }
+});
+function showErr(msg){ formMsg.className='err'; formMsg.textContent = msg; }
+
+// ---------- catalogues ----------
+let allCatalogues = [];
+async function loadCatalogues(){
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues?select=id,name,description,client_logo_url,drink_ids,created_at&order=created_at.desc', { headers: apiHeaders() });
+    if(!res.ok) throw new Error('Could not load catalogues (' + res.status + ')');
+    allCatalogues = await res.json();
+    renderCatalogues();
+  } catch(err){
+    document.getElementById('cataloguesList').innerHTML='';
+    document.getElementById('catEmpty').style.display='block';
+    document.getElementById('catEmpty').textContent = friendlyError(err);
+  }
+}
+function renderCatalogues(){
+  const list = document.getElementById('cataloguesList');
+  const empty = document.getElementById('catEmpty');
+  document.getElementById('catCount').textContent = allCatalogues.length ? '(' + allCatalogues.length + ')' : '';
+  list.innerHTML = '';
+  if(allCatalogues.length === 0){ empty.style.display='block'; empty.textContent='No catalogues yet.'; return; }
+  empty.style.display='none';
+  allCatalogues.forEach(c=>{
+    const link = location.origin + '/c/?id=' + c.id;
+    const row = document.createElement('div'); row.className='cat-card';
+    const descLine = c.description ? `<p class="cat-desc">${c.description}</p>` : '';
+    row.innerHTML = `<div><p class="cat-name">${c.name}</p>${descLine}<p class="cat-meta">${(c.drink_ids||[]).length} drinks · ${new Date(c.created_at).toLocaleDateString()}</p></div>
+      <button class="copy-btn">Copy link</button>`;
+    row.querySelector('.copy-btn').addEventListener('click', ()=>{
+      navigator.clipboard.writeText(link);
+      row.querySelector('.copy-btn').textContent = 'Copied';
+      setTimeout(()=> row.querySelector('.copy-btn').textContent='Copy link', 1500);
+    });
+    list.appendChild(row);
+  });
+}
+let pickedIds = new Set();
+let pickerFilter = 'All';
+
+function pickerCategories(){
+  const cats = ['All'];
+  Array.from(new Set(allDrinks.map(d=>d.bean))).forEach(b=>cats.push(b));
+  Array.from(new Set(allDrinks.map(d=>d.type))).forEach(t=>{ if(!cats.includes(t)) cats.push(t); });
+  return cats;
+}
+function renderPickerFilters(){
+  const row = document.getElementById('pickerFilters');
+  row.innerHTML = '';
+  pickerCategories().forEach(c=>{
+    const chip = document.createElement('button');
+    chip.type='button'; chip.className='picker-chip' + (c===pickerFilter ? ' active' : '');
+    chip.textContent = c;
+    chip.addEventListener('click', ()=>{ pickerFilter = c; renderPickerFilters(); renderPickerGrid(); });
+    row.appendChild(chip);
+  });
+}
+function renderPickerGrid(){
+  const grid = document.getElementById('drinkPicker');
+  grid.innerHTML = '';
+  const list = pickerFilter==='All' ? allDrinks : allDrinks.filter(d=> d.bean===pickerFilter || d.type===pickerFilter);
+  list.forEach(d=>{
+    const card = document.createElement('div');
+    card.className = 'pick-card' + (pickedIds.has(d.id) ? ' selected' : '');
+    card.innerHTML = `<div class="thumb"><img src="${d.image_url}" alt=""></div><p class="pname">${d.name}</p><div class="check">✓</div>`;
+    card.addEventListener('click', ()=>{
+      if(pickedIds.has(d.id)) pickedIds.delete(d.id); else pickedIds.add(d.id);
+      card.classList.toggle('selected');
+      updatePickCount();
+    });
+    grid.appendChild(card);
+  });
+  updatePickCount();
+}
+function updatePickCount(){
+  document.getElementById('pickCount').textContent = pickedIds.size ? '· ' + pickedIds.size + ' selected' : '';
+}
+document.getElementById('newCatBtn').addEventListener('click', ()=>{
+  document.getElementById('builderPanel').style.display='block';
+  pickedIds = new Set(); pickerFilter='All';
+  renderPickerFilters(); renderPickerGrid();
+});
+document.getElementById('cancelCatBtn').addEventListener('click', ()=>{
+  document.getElementById('builderPanel').style.display='none';
+});
+document.getElementById('saveCatBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('catName').value.trim();
+  const description = document.getElementById('catDesc').value.trim();
+  const ids = Array.from(pickedIds);
+  const msg = document.getElementById('catMsg');
+  msg.className=''; msg.textContent='';
+  if(!name){ msg.style.color='var(--orange)'; msg.textContent='Give the catalogue a name.'; return; }
+  if(ids.length === 0){ msg.style.color='var(--orange)'; msg.textContent='Choose at least one drink.'; return; }
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues', {
+      method:'POST', headers: apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
+      body: JSON.stringify({ name, description: description || null, drink_ids: ids })
+    });
+    if(!res.ok) throw new Error('Saving catalogue failed (' + res.status + ')');
+    document.getElementById('catName').value='';
+    document.getElementById('catDesc').value='';
+    document.getElementById('builderPanel').style.display='none';
+    loadCatalogues();
+  } catch(err){ msg.style.color='var(--orange)'; msg.textContent = friendlyError(err); }
+});
+</script>
+</body>
+</html>

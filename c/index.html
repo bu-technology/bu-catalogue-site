@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beverage Union — Tasting</title>
+<link rel="stylesheet" href="../assets/css/brand.css">
+<link rel="stylesheet" href="../assets/css/arc.css">
+<style>
+.page-wrap{max-width:900px;margin:0 auto;padding:64px 24px 80px;}
+.hero{text-align:center;margin-bottom:44px;}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:26px;}
+.logo-row img{height:36px;width:auto;}
+.logo-row .divider{width:1px;height:26px;background:var(--line-strong);}
+.hero h1{font-size:clamp(36px,6.4vw,60px);}
+.hero p.sub{font-size:15px;color:var(--text-dim);max-width:420px;margin:16px auto 0;line-height:1.6;}
+
+#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:100px 0;}
+footer{text-align:center;margin-top:80px;}
+footer img{width:100px;margin:0 auto;opacity:0.55;}
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <div id="stateMsg">Preparing the tasting…</div>
+
+  <div id="content" style="display:none;">
+    <div class="hero">
+      <div class="logo-row" id="logoRow">
+        <img src="../assets/logos/bu-mark-light.svg" alt="Beverage Union">
+      </div>
+      <p class="eyebrow">A Beverage Union tasting</p>
+      <h1 class="h-display" id="catTitle"></h1>
+      <p class="sub" id="catDesc" style="display:none;"></p>
+      <p class="sub">Drag through, or use the arrows.</p>
+    </div>
+
+    <div class="arc-info" id="arcInfo">
+      <p class="name" id="infoName"></p>
+      <p class="desc" id="infoDesc"></p>
+      <div class="tags" id="infoTags"></div>
+    </div>
+    <div class="arc-container" id="arcContainer"></div>
+    <div class="arc-nav">
+      <button class="arc-nav-btn" id="prevBtn" aria-label="Previous">‹</button>
+      <button class="arc-nav-btn" id="nextBtn" aria-label="Next">›</button>
+    </div>
+
+    <footer><img src="../assets/logos/bu-wordmark-light.svg" alt="Beverage Union"></footer>
+  </div>
+</div>
+
+<script src="../assets/js/supabase-client.js"></script>
+<script src="../assets/js/arc-carousel.js"></script>
+<script>
+async function boot(){
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const stateMsg = document.getElementById('stateMsg');
+  if(!id){ stateMsg.textContent = "This link is missing a catalogue id."; return; }
+
+  try{
+    const catalogue = await fetchCatalogue(id);
+    if(!catalogue){ stateMsg.textContent = "This tasting couldn't be found."; return; }
+
+    const drinks = await fetchDrinksByIds(catalogue.drink_ids);
+    if(drinks.length === 0){ stateMsg.textContent = "This tasting doesn't have any drinks yet."; return; }
+
+    document.getElementById('catTitle').textContent = catalogue.name;
+    if(catalogue.description){
+      const descEl = document.getElementById('catDesc');
+      descEl.textContent = catalogue.description;
+      descEl.style.display = 'block';
+    }
+    if(catalogue.client_logo_url){
+      const row = document.getElementById('logoRow');
+      const divider = document.createElement('div'); divider.className='divider';
+      const clientImg = document.createElement('img'); clientImg.src = catalogue.client_logo_url; clientImg.alt = catalogue.name;
+      row.appendChild(divider); row.appendChild(clientImg);
+    }
+
+    stateMsg.style.display='none';
+    document.getElementById('content').style.display='block';
+
+    const infoName = document.getElementById('infoName');
+    const infoDesc = document.getElementById('infoDesc');
+    const infoTags = document.getElementById('infoTags');
+
+    const carousel = initArcCarousel({
+      container: document.getElementById('arcContainer'),
+      drinks: drinks,
+      onChange: (d)=>{
+        [infoName, infoDesc, infoTags].forEach(el=> el.style.opacity = 0);
+        setTimeout(()=>{
+          infoName.textContent = d.name;
+          infoDesc.textContent = d.description;
+          infoTags.innerHTML = '';
+          (d.tasting_notes||[]).forEach(t=>{
+            const tag = document.createElement('span');
+            tag.className = 'arc-tag'; tag.textContent = t;
+            infoTags.appendChild(tag);
+          });
+          [infoName, infoDesc, infoTags].forEach(el=> el.style.opacity = 1);
+        }, 200);
+      }
+    });
+    document.getElementById('prevBtn').onclick = ()=> carousel.prev();
+    document.getElementById('nextBtn').onclick = ()=> carousel.next();
+  } catch(err){
+    stateMsg.textContent = err.message || "Something went wrong loading this tasting.";
+  }
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+@font-face{font-family:'General Sans';src:url('../fonts/GeneralSans-Light.woff2') format('woff2');font-weight:300;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../fonts/GeneralSans-Regular.woff2') format('woff2');font-weight:400;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../fonts/GeneralSans-Medium.woff2') format('woff2');font-weight:500;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../fonts/GeneralSans-Semibold.woff2') format('woff2');font-weight:600;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../fonts/GeneralSans-Bold.woff2') format('woff2');font-weight:700;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../fonts/GeneralSans-Italic.woff2') format('woff2');font-weight:400;font-style:italic;font-display:swap;}
+
+:root{
+  --charcoal:#1A1A1A;
+  --charcoal-deep:#100D0B;
+  --steel:#5D8DA0;
+  --cream:#F5EDD8;
+  --parchment:#FAF9F7;
+  --plum:#6B3B7A;
+  --orange:#CC5500;
+  --teal:#1B6B7D;
+  --sage:#5B7A5B;
+  --line: rgba(250,249,247,0.14);
+  --line-strong: rgba(250,249,247,0.28);
+  --text-dim: rgba(250,249,247,0.6);
+  --text-faint: rgba(250,249,247,0.38);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--charcoal);color:var(--parchment);}
+body{
+  font-family:'General Sans',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block;}
+button{font-family:inherit;cursor:pointer;background:none;border:none;color:inherit;}
+a{color:inherit;}
+
+.eyebrow{
+  font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--steel);
+  margin:0 0 14px;
+}
+.h-display{
+  font-family:'General Sans',sans-serif;font-weight:600;letter-spacing:-0.02em;line-height:0.98;margin:0;
+}
+.body-text{
+  font-size:16px;line-height:1.6;color:var(--text-dim);font-weight:400;
+}
