@@ -27,21 +27,32 @@ body{overflow-x:hidden;}
 .row-wrap.grabbing{cursor:grabbing;}
 .row-track{display:flex;will-change:transform;}
 .row-item{
-  flex:0 0 220px;height:280px;margin-right:34px;display:flex;align-items:center;justify-content:center;
-  transition:transform .3s ease;
+  flex:0 0 220px;height:300px;margin-right:34px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  transition:transform .45s cubic-bezier(.2,.8,.3,1);cursor:pointer;
 }
-.row-item img{max-width:88%;max-height:88%;object-fit:contain;filter:drop-shadow(0 20px 26px rgba(0,0,0,0.5));pointer-events:none;-webkit-user-drag:none;}
-.row-item:hover{transform:translateY(-6px) scale(1.04);}
+.row-item img{
+  max-width:88%;max-height:230px;object-fit:contain;
+  filter:drop-shadow(0 20px 26px rgba(0,0,0,0.5));pointer-events:none;-webkit-user-drag:none;
+  transition:transform .45s cubic-bezier(.2,.8,.3,1);
+}
+.row-item .ri-name{
+  font-size:13.5px;font-weight:500;color:var(--parchment);margin:14px 0 0;
+  text-shadow:0 2px 12px rgba(0,0,0,0.6);pointer-events:none;
+}
+.row-item:hover{transform:translateY(-8px);}
+.row-item:hover img{transform:scale(1.05);}
 
 footer{text-align:center;margin:20px 0 60px;position:relative;z-index:1;}
 footer img{width:100px;margin:0 auto;opacity:0.55;}
 
 /* takeover */
 #takeover{
-  position:fixed;inset:0;background:rgba(10,8,6,0.88);backdrop-filter:blur(20px);
+  position:fixed;inset:0;background:rgba(10,8,6,0.9);backdrop-filter:blur(22px);
   display:none;align-items:center;justify-content:center;z-index:50;padding:40px 24px;
+  opacity:0;transition:opacity .35s ease;
 }
-#takeover.open{display:flex;}
+#takeover.open{opacity:1;}
 .takeover-inner{
   display:flex;gap:56px;max-width:920px;width:100%;align-items:center;
 }
@@ -149,7 +160,11 @@ function buildRow(drinks){
       item.className = 'row-item';
       const img = document.createElement('img');
       img.src = d.image_url; img.alt = d.name; img.draggable = false;
+      const label = document.createElement('p');
+      label.className = 'ri-name';
+      label.textContent = d.name;
       item.appendChild(img);
+      item.appendChild(label);
       item.addEventListener('click', ()=>{ if(!wasDragging) openTakeover(d); });
       track.appendChild(item);
     });
@@ -158,21 +173,38 @@ function buildRow(drinks){
   let offset = setWidth;
   let dragging = false, startX = 0, startOffset = 0, wasDragging = false, paused = false;
   let lastT = null;
-  const SPEED = 0.026; // px per ms
+  let velocity = 0;          // px/ms carried after release
+  let lastPointerX = 0, lastPointerT = 0;
+  const DRIFT = 0.026;       // idle drift speed, px/ms
+  const FRICTION = 0.94;     // per-frame decay of throw velocity
 
   function tick(t){
     if(lastT === null) lastT = t;
-    const dt = t - lastT; lastT = t;
-    if(!dragging && !paused){ offset += SPEED * dt; }
+    let dt = t - lastT; lastT = t;
+    if(dt > 60) dt = 60;     // tab was backgrounded; don't lurch
+
+    if(!dragging && !paused){
+      if(Math.abs(velocity) > DRIFT){
+        offset += velocity * dt;
+        velocity *= Math.pow(FRICTION, dt/16.67);
+      } else {
+        velocity = 0;
+        offset += DRIFT * dt;
+      }
+    }
+
     if(offset >= setWidth*2) offset -= setWidth;
     if(offset < 0) offset += setWidth;
-    track.style.transform = 'translateX(' + (-offset) + 'px)';
+    track.style.transform = 'translate3d(' + (-offset).toFixed(2) + 'px,0,0)';
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 
   wrap.addEventListener('pointerdown', e=>{
-    dragging = true; wasDragging = false; startX = e.clientX; startOffset = offset;
+    dragging = true; wasDragging = false;
+    startX = e.clientX; startOffset = offset;
+    lastPointerX = e.clientX; lastPointerT = performance.now();
+    velocity = 0;
     wrap.setPointerCapture(e.pointerId); wrap.classList.add('grabbing');
   });
   wrap.addEventListener('pointermove', e=>{
@@ -180,10 +212,20 @@ function buildRow(drinks){
     const dx = e.clientX - startX;
     if(Math.abs(dx) > 6) wasDragging = true;
     offset = startOffset - dx;
+
+    const now = performance.now();
+    const dt = now - lastPointerT;
+    if(dt > 0){
+      const inst = -(e.clientX - lastPointerX) / dt;
+      velocity = velocity*0.7 + inst*0.3;   // smooth out jitter
+      lastPointerX = e.clientX; lastPointerT = now;
+    }
   });
   function release(){
     if(!dragging) return;
     dragging = false; wrap.classList.remove('grabbing');
+    if(performance.now() - lastPointerT > 100) velocity = 0;  // held still: no throw
+    velocity = Math.max(-2.5, Math.min(2.5, velocity));
     setTimeout(()=>{ wasDragging = false; }, 50);
   }
   wrap.addEventListener('pointerup', release);
@@ -203,11 +245,15 @@ function openTakeover(d){
     const tag = document.createElement('span'); tag.className='tk-tag'; tag.textContent = t;
     tagsEl.appendChild(tag);
   });
-  document.getElementById('takeover').classList.add('open');
+  const tk = document.getElementById('takeover');
+  tk.style.display = 'flex';
+  requestAnimationFrame(()=> tk.classList.add('open'));
   if(window._buPauseRow) window._buPauseRow(true);
 }
 function closeTakeover(){
-  document.getElementById('takeover').classList.remove('open');
+  const tk = document.getElementById('takeover');
+  tk.classList.remove('open');
+  setTimeout(()=>{ if(!tk.classList.contains('open')) tk.style.display='none'; }, 360);
   if(window._buPauseRow) window._buPauseRow(false);
 }
 document.getElementById('closeBtn').addEventListener('click', closeTakeover);
