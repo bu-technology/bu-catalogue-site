@@ -3,45 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Beverage Union — The Menu</title>
+<title>Atlas — Beverage Union</title>
 <link rel="stylesheet" href="assets/css/brand.css">
-<link rel="stylesheet" href="assets/css/arc.css">
 <style>
-.page-wrap{max-width:900px;margin:0 auto;padding:64px 24px 80px;}
-.hero{text-align:center;margin-bottom:44px;}
-.hero img{width:44px;margin:0 auto 26px;}
-.hero h1{font-size:clamp(40px,7vw,68px);}
-.hero p.sub{font-size:15px;color:var(--text-dim);max-width:420px;margin:16px auto 0;line-height:1.6;}
-
-.top-nav{display:flex;justify-content:flex-end;padding:20px 24px 0;max-width:900px;margin:0 auto;}
+.top-nav{display:flex;justify-content:flex-end;padding:20px 24px 0;max-width:1100px;margin:0 auto;}
 .top-nav a{font-size:12px;color:var(--text-faint);text-decoration:none;letter-spacing:.04em;}
 .top-nav a:hover{color:var(--text-dim);}
 
-.menu-tiles{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:40px 0 24px;
-}
-.menu-tile{
-  text-align:left;padding:22px 20px;border-radius:14px;border:1px solid var(--line);background:rgba(250,249,247,0.03);
-  transition:all .25s ease;
-}
-.menu-tile:hover{border-color:var(--line-strong);transform:translateY(-2px);}
-.menu-tile.active{border-color:var(--tile-accent, var(--steel));background:rgba(93,141,160,0.08);}
-.menu-tile .t-name{font-size:17px;font-weight:600;margin:0 0 6px;}
-.menu-tile .t-desc{font-size:12.5px;color:var(--text-dim);margin:0;line-height:1.5;}
+.page-wrap{max-width:1100px;margin:0 auto;padding:8px 24px 100px;}
+.hero{text-align:center;margin:40px 0 56px;}
+.hero img{width:40px;margin:0 auto 22px;}
+.hero h1{font-size:clamp(36px,6vw,58px);}
+.hero p.sub{font-size:14.5px;color:var(--text-dim);max-width:400px;margin:14px auto 0;line-height:1.6;}
 
-.filter-row{
-  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 52px;
-}
-.filter-chip{
-  padding:8px 16px;border-radius:999px;border:1px solid var(--line);color:var(--text-faint);
-  font-size:12px;font-weight:600;transition:all .2s ease;
-}
-.filter-chip.active{border-color:var(--steel);color:var(--parchment);background:rgba(93,141,160,0.16);}
-.filter-chip:hover:not(.active){border-color:var(--line-strong);}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 18px;}
+.section-head h2{font-size:15px;font-weight:600;letter-spacing:.04em;margin:0;}
+.section-head span{font-size:12px;color:var(--text-faint);}
 
-#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:60px 0;}
+/* catalogue carousel */
+.cat-scroll{
+  display:flex;gap:16px;overflow-x:auto;padding:4px 4px 16px;margin-bottom:64px;
+  scroll-snap-type:x proximity;
+}
+.cat-scroll::-webkit-scrollbar{height:5px;}
+.cat-scroll::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px;}
+.cat-tile{
+  position:relative;flex:0 0 auto;width:240px;height:150px;border-radius:14px;overflow:hidden;
+  cursor:pointer;scroll-snap-align:start;border:1px solid var(--line);
+}
+.cat-tile canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.cat-tile .overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;
+  background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.55) 100%);
+}
+.cat-tile .t-name{font-size:15px;font-weight:600;margin:0 0 3px;color:var(--parchment);}
+.cat-tile .t-count{font-size:11px;color:rgba(250,249,247,0.75);margin:0;}
+.cat-tile:hover{border-color:var(--line-strong);}
+
+/* drink grid */
+.drink-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;
+}
+.grid-item{
+  aspect-ratio:1/1;border-radius:12px;background:rgba(250,249,247,0.03);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;
+}
+.grid-item img{max-width:78%;max-height:78%;object-fit:contain;}
+.grid-item .g-name{
+  position:absolute;bottom:0;left:0;right:0;padding:8px 10px;font-size:11px;color:var(--text-dim);
+  background:linear-gradient(180deg, transparent, rgba(26,26,26,0.85));opacity:0;transition:opacity .2s ease;
+}
+.grid-item:hover .g-name{opacity:1;}
+
+#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:40px 0;}
 footer{text-align:center;margin-top:80px;}
-footer img{width:100px;margin:0 auto;opacity:0.55;}
+footer img{width:100px;margin:0 auto;opacity:0.5;}
 </style>
 </head>
 <body>
@@ -51,142 +67,78 @@ footer img{width:100px;margin:0 auto;opacity:0.55;}
 <div class="page-wrap">
   <div class="hero">
     <img src="assets/logos/bu-mark-light.svg" alt="Beverage Union">
-    <p class="eyebrow">Beverage Union</p>
-    <h1 class="h-display">The Menu</h1>
-    <p class="sub">Craft originals, no alcohol required. Choose a menu, or drag through everything.</p>
+    <p class="eyebrow">Atlas</p>
+    <h1 class="h-display">Every drink,<br>one place.</h1>
+    <p class="sub">The full collection, and every menu built from it.</p>
   </div>
 
-  <div class="menu-tiles" id="menuTiles"></div>
-  <div class="filter-row" id="filterRow"></div>
-
-  <div id="stateMsg">Loading the menu…</div>
-
-  <div id="carouselArea" style="display:none;">
-    <div class="arc-info" id="arcInfo">
-      <p class="name" id="infoName"></p>
-      <p class="desc" id="infoDesc"></p>
-      <div class="tags" id="infoTags"></div>
-    </div>
-    <div class="arc-container" id="arcContainer"></div>
-    <div class="arc-nav">
-      <button class="arc-nav-btn" id="prevBtn" aria-label="Previous">‹</button>
-      <button class="arc-nav-btn" id="nextBtn" aria-label="Next">›</button>
-    </div>
+  <div id="catSection" style="display:none;">
+    <div class="section-head"><h2>Menus</h2></div>
+    <div class="cat-scroll" id="catScroll"></div>
   </div>
+
+  <div id="gridSection" style="display:none;">
+    <div class="section-head"><h2>All drinks</h2><span id="gridCount"></span></div>
+    <div class="drink-grid" id="drinkGrid"></div>
+  </div>
+
+  <div id="stateMsg">Loading…</div>
 
   <footer><img src="assets/logos/bu-wordmark-light.svg" alt="Beverage Union"></footer>
 </div>
 
 <script src="assets/js/supabase-client.js"></script>
-<script src="assets/js/arc-carousel.js"></script>
+<script src="assets/js/textures.js"></script>
 <script>
-let allDrinks = [];
-let carousel = null;
-let activeFilter = 'All';
-
 async function boot(){
   try{
-    allDrinks = await fetchAllDrinks();
-    if(allDrinks.length === 0){
-      document.getElementById('stateMsg').textContent = 'No drinks yet.';
-      return;
+    const [catRes, drinkRes] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/catalogues?is_public=eq.true&select=id,name,drink_ids,background_style&order=created_at.desc', { headers: buHeaders() }),
+      fetch(SUPABASE_URL + '/rest/v1/drinks?is_public=eq.true&select=id,name,image_url&order=created_at.desc', { headers: buHeaders() })
+    ]);
+    const catalogues = catRes.ok ? await catRes.json() : [];
+    const drinks = drinkRes.ok ? await drinkRes.json() : [];
+
+    document.getElementById('stateMsg').style.display = 'none';
+
+    if(catalogues.length){
+      document.getElementById('catSection').style.display = 'block';
+      const scroll = document.getElementById('catScroll');
+      catalogues.forEach(c=>{
+        const tile = document.createElement('a');
+        tile.className = 'cat-tile';
+        tile.href = 'c/?id=' + c.id;
+        const canvas = document.createElement('canvas');
+        tile.appendChild(canvas);
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        overlay.innerHTML = `<p class="t-name">${c.name}</p><p class="t-count">${(c.drink_ids||[]).length} drinks</p>`;
+        tile.appendChild(overlay);
+        scroll.appendChild(tile);
+        buStartTexture(canvas, c.background_style || 'ember');
+      });
     }
-    buildTiles();
-    buildFilters();
-    document.getElementById('stateMsg').style.display='none';
-    document.getElementById('carouselArea').style.display='block';
-    renderCarousel();
+
+    if(drinks.length){
+      document.getElementById('gridSection').style.display = 'block';
+      document.getElementById('gridCount').textContent = drinks.length;
+      const grid = document.getElementById('drinkGrid');
+      drinks.forEach(d=>{
+        const item = document.createElement('div');
+        item.className = 'grid-item';
+        item.innerHTML = `<img src="${d.image_url}" alt="${d.name}" loading="lazy"><span class="g-name">${d.name}</span>`;
+        grid.appendChild(item);
+      });
+    }
+
+    if(!catalogues.length && !drinks.length){
+      document.getElementById('stateMsg').style.display = 'block';
+      document.getElementById('stateMsg').textContent = 'Nothing published yet — mark a drink or menu "on home" in the admin panel.';
+    }
   } catch(err){
-    document.getElementById('stateMsg').textContent = err.message || 'Could not load the menu.';
+    document.getElementById('stateMsg').textContent = err.message || 'Could not load Atlas.';
   }
 }
-
-const TILE_COPY = {
-  'All':      { desc: 'Every drink we make.', accent: '#5D8DA0' },
-  'Romance':  { desc: 'Connection, warmth, familiar.', accent: '#6B3B7A' },
-  'Euphoria': { desc: 'Stimulation, lift, bold.', accent: '#CC5500' }
-};
-
-function buildTiles(){
-  const beans = Array.from(new Set(allDrinks.map(d=>d.bean)));
-  const cats = ['All', ...beans];
-  const wrap = document.getElementById('menuTiles');
-  wrap.innerHTML = '';
-  cats.forEach(c=>{
-    const info = TILE_COPY[c] || { desc: '', accent: '#5D8DA0' };
-    const tile = document.createElement('button');
-    tile.className = 'menu-tile' + (c===activeFilter ? ' active' : '');
-    tile.style.setProperty('--tile-accent', info.accent);
-    tile.innerHTML = `<p class="t-name">${c === 'All' ? 'Full menu' : c}</p><p class="t-desc">${info.desc}</p>`;
-    tile.addEventListener('click', ()=>{
-      activeFilter = c;
-      buildTiles(); buildFilters();
-      renderCarousel();
-    });
-    wrap.appendChild(tile);
-  });
-}
-
-function buildFilters(){
-  const types = Array.from(new Set(allDrinks.map(d=>d.type)));
-  const cats = ['All', ...types];
-  const row = document.getElementById('filterRow');
-  row.innerHTML = '';
-  cats.forEach(c=>{
-    const chip = document.createElement('button');
-    chip.className = 'filter-chip' + (c===activeFilter ? ' active' : '');
-    chip.textContent = c;
-    chip.addEventListener('click', ()=>{
-      activeFilter = c;
-      buildTiles(); buildFilters();
-      renderCarousel();
-    });
-    row.appendChild(chip);
-  });
-}
-
-function filteredDrinks(){
-  if(activeFilter === 'All') return allDrinks;
-  return allDrinks.filter(d => d.bean === activeFilter || d.type === activeFilter);
-}
-
-function renderCarousel(){
-  const list = filteredDrinks();
-  if(list.length === 0){
-    document.getElementById('carouselArea').style.display='none';
-    document.getElementById('stateMsg').style.display='block';
-    document.getElementById('stateMsg').textContent = 'Nothing in this filter yet.';
-    return;
-  }
-  document.getElementById('stateMsg').style.display='none';
-  document.getElementById('carouselArea').style.display='block';
-
-  const infoName = document.getElementById('infoName');
-  const infoDesc = document.getElementById('infoDesc');
-  const infoTags = document.getElementById('infoTags');
-
-  carousel = initArcCarousel({
-    container: document.getElementById('arcContainer'),
-    drinks: list,
-    onChange: (d)=>{
-      [infoName, infoDesc, infoTags].forEach(el=> el.style.opacity = 0);
-      setTimeout(()=>{
-        infoName.textContent = d.name;
-        infoDesc.textContent = d.description;
-        infoTags.innerHTML = '';
-        (d.tasting_notes||[]).forEach(t=>{
-          const tag = document.createElement('span');
-          tag.className = 'arc-tag'; tag.textContent = t;
-          infoTags.appendChild(tag);
-        });
-        [infoName, infoDesc, infoTags].forEach(el=> el.style.opacity = 1);
-      }, 200);
-    }
-  });
-  document.getElementById('prevBtn').onclick = ()=> carousel.prev();
-  document.getElementById('nextBtn').onclick = ()=> carousel.next();
-}
-
 boot();
 </script>
 </body>
