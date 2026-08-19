@@ -12,7 +12,7 @@ async function fetchAllDrinks(){
 }
 
 async function fetchCatalogue(id){
-  const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues?id=eq.' + encodeURIComponent(id) + '&select=id,name,description,client_logo_url,drink_ids', { headers: buHeaders() });
+  const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues?id=eq.' + encodeURIComponent(id) + '&select=id,name,description,client_logo_url,drink_ids,background_style', { headers: buHeaders() });
   if(!res.ok) throw new Error('Could not load catalogue (' + res.status + ')');
   const rows = await res.json();
   return rows[0] || null;
