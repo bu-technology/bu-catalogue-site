@@ -2,84 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Beverage Union — Tasting</title>
 <link rel="stylesheet" href="../assets/css/brand.css">
+<link rel="stylesheet" href="../assets/css/shared.css">
 <style>
 body{overflow-x:hidden;}
-#bgCanvas{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1;}
-
-.page-wrap{max-width:1100px;margin:0 auto;padding:64px 24px 40px;position:relative;z-index:1;}
-.hero{text-align:center;margin-bottom:12px;}
-.logo-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:24px;}
-.logo-row img{height:32px;width:auto;}
-.logo-row .divider{width:1px;height:24px;background:var(--line-strong);}
-.hero h1{font-size:clamp(34px,6vw,58px);text-shadow:0 4px 30px rgba(0,0,0,0.4);}
-.hero p.sub{font-size:15px;color:var(--parchment);opacity:0.75;max-width:460px;margin:14px auto 0;line-height:1.6;}
-
-#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:100px 0;position:relative;z-index:1;}
-
-/* infinite row */
-.row-wrap{
-  position:relative;z-index:1;margin-top:56px;padding:20px 0 70px;
-  cursor:grab;touch-action:pan-y;user-select:none;overflow:hidden;
+#bgHost{position:fixed;inset:0;z-index:-1;overflow:hidden;}
+#bgHost canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transform:scale(1.1);}
+#bgHost::after{
+  content:"";position:absolute;inset:0;opacity:.18;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.row-wrap.grabbing{cursor:grabbing;}
-.row-track{display:flex;will-change:transform;}
-.row-item{
-  flex:0 0 220px;height:300px;margin-right:34px;
+#bgHost .vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(120% 90% at 50% 40%, transparent 30%, rgba(0,0,0,.55) 100%);
+}
+
+.shell{max-width:1280px;margin:0 auto;padding:clamp(40px,7vh,72px) clamp(16px,4vw,30px) 40px;position:relative;z-index:1;}
+.hero{text-align:center;margin-bottom:clamp(30px,6vh,52px);}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:22px;}
+.logo-row img{height:30px;width:auto;}
+.logo-row .sep{width:1px;height:22px;background:var(--line-strong);}
+.hero h1{font-size:clamp(30px,6.6vw,56px);text-shadow:0 4px 34px rgba(0,0,0,.45);}
+.hero p.sub{font-size:clamp(13px,2.4vw,15.5px);color:var(--parchment);opacity:.78;max-width:460px;margin:14px auto 0;line-height:1.6;}
+
+#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:110px 20px;position:relative;z-index:1;}
+
+.cat-block{margin-bottom:clamp(26px,5vh,44px);}
+.cat-label{
+  font-size:11.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--parchment);opacity:.62;margin:0 0 12px;padding-left:clamp(4px,2vw,10px);
+}
+.marquee{
+  position:relative;overflow:hidden;cursor:grab;touch-action:pan-y;user-select:none;
+  padding:10px 0 4px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
+}
+.marquee.grabbing{cursor:grabbing;}
+.mq-track{display:flex;will-change:transform;}
+.mq-item{
+  flex:0 0 auto;width:clamp(132px,32vw,188px);
+  margin-right:clamp(16px,3vw,30px);
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-  transition:transform .45s cubic-bezier(.2,.8,.3,1);cursor:pointer;
+  cursor:pointer;transition:transform .42s cubic-bezier(.2,.85,.3,1);
 }
-.row-item img{
-  max-width:88%;max-height:230px;object-fit:contain;
-  filter:drop-shadow(0 20px 26px rgba(0,0,0,0.5));pointer-events:none;-webkit-user-drag:none;
-  transition:transform .45s cubic-bezier(.2,.8,.3,1);
+.mq-item img{
+  width:100%;height:clamp(150px,26vh,230px);object-fit:contain;
+  filter:drop-shadow(0 20px 28px rgba(0,0,0,.55));
+  pointer-events:none;-webkit-user-drag:none;
+  transition:transform .42s cubic-bezier(.2,.85,.3,1);
 }
-.row-item .ri-name{
-  font-size:13.5px;font-weight:500;color:var(--parchment);margin:14px 0 0;
-  text-shadow:0 2px 12px rgba(0,0,0,0.6);pointer-events:none;
+.mq-item .mq-name{
+  font-size:13px;font-weight:500;color:var(--parchment);margin:12px 0 0;text-align:center;
+  text-shadow:0 2px 12px rgba(0,0,0,.7);pointer-events:none;
 }
-.row-item:hover{transform:translateY(-8px);}
-.row-item:hover img{transform:scale(1.05);}
+.mq-item:hover{transform:translateY(-7px);}
+.mq-item:hover img{transform:scale(1.05);}
 
-footer{text-align:center;margin:20px 0 60px;position:relative;z-index:1;}
-footer img{width:100px;margin:0 auto;opacity:0.55;}
-
-/* takeover */
-#takeover{
-  position:fixed;inset:0;background:rgba(10,8,6,0.9);backdrop-filter:blur(22px);
-  display:none;align-items:center;justify-content:center;z-index:50;padding:40px 24px;
-  opacity:0;transition:opacity .35s ease;
-}
-#takeover.open{opacity:1;}
-.takeover-inner{
-  display:flex;gap:56px;max-width:920px;width:100%;align-items:center;
-}
-@media(max-width:760px){.takeover-inner{flex-direction:column;gap:28px;}}
-.takeover-img{flex:1 1 46%;display:flex;align-items:center;justify-content:center;}
-.takeover-img img{max-width:100%;max-height:60vh;object-fit:contain;filter:drop-shadow(0 30px 50px rgba(0,0,0,0.55));}
-.takeover-info{flex:1 1 46%;}
-.takeover-info .eyebrow{margin-bottom:12px;}
-.takeover-info h2{font-family:'General Sans',sans-serif;font-weight:600;font-size:clamp(28px,4vw,42px);margin:0 0 16px;letter-spacing:-0.01em;}
-.takeover-info p.desc{font-size:15px;line-height:1.65;color:var(--text-dim);margin:0 0 20px;max-width:420px;}
-.takeover-tags{display:flex;gap:8px;flex-wrap:wrap;}
-.tk-tag{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:6px 13px;border-radius:999px;border:1px solid var(--line);color:var(--text-dim);}
-#closeBtn{
-  position:absolute;top:26px;right:28px;width:40px;height:40px;border-radius:50%;
-  border:1px solid var(--line-strong);color:var(--parchment);font-size:18px;
-  display:flex;align-items:center;justify-content:center;z-index:51;
-}
-#closeBtn:hover{background:rgba(250,249,247,0.08);}
+footer{text-align:center;margin:40px 0 56px;position:relative;z-index:1;}
+footer img{width:96px;margin:0 auto;opacity:.55;}
 </style>
 </head>
 <body>
 
-<canvas id="bgCanvas"></canvas>
-<div id="stateMsg">Preparing the tasting…</div>
+<div id="bgHost"><div class="vignette"></div></div>
+<div id="stateMsg">Preparing the tasting&#8230;</div>
 
 <div id="content" style="display:none;">
-  <div class="page-wrap">
+  <div class="shell">
     <div class="hero">
       <div class="logo-row" id="logoRow">
         <img src="../assets/logos/bu-mark-light.svg" alt="Beverage Union">
@@ -88,38 +80,19 @@ footer img{width:100px;margin:0 auto;opacity:0.55;}
       <h1 class="h-display" id="catTitle"></h1>
       <p class="sub" id="catDesc" style="display:none;"></p>
     </div>
-
-    <div class="row-wrap" id="rowWrap">
-      <div class="row-track" id="rowTrack"></div>
-    </div>
-
+    <div id="rows"></div>
     <footer><img src="../assets/logos/bu-wordmark-light.svg" alt="Beverage Union"></footer>
   </div>
 </div>
 
-<div id="takeover">
-  <button id="closeBtn" aria-label="Close">✕</button>
-  <div class="takeover-inner">
-    <div class="takeover-img"><img id="tkImg" alt=""></div>
-    <div class="takeover-info">
-      <p class="eyebrow" id="tkType"></p>
-      <h2 id="tkName"></h2>
-      <p class="desc" id="tkDesc"></p>
-      <div class="takeover-tags" id="tkTags"></div>
-    </div>
-  </div>
-</div>
-
 <script src="../assets/js/supabase-client.js"></script>
-<script src="../assets/js/textures.js"></script>
+<script src="../assets/js/backgrounds.js"></script>
+<script src="../assets/js/drink-detail.js"></script>
 <script>
-const ITEM_PITCH = 254; // 220 width + 34 margin
-
 async function boot(){
-  const params = new URLSearchParams(location.search);
-  const id = params.get('id');
+  const id = new URLSearchParams(location.search).get('id');
   const stateMsg = document.getElementById('stateMsg');
-  if(!id){ stateMsg.textContent = "This link is missing a catalogue id."; return; }
+  if(!id){ stateMsg.textContent = 'This link is missing a catalogue id.'; return; }
 
   try{
     const catalogue = await fetchCatalogue(id);
@@ -129,140 +102,164 @@ async function boot(){
 
     document.getElementById('catTitle').textContent = catalogue.name;
     if(catalogue.description){
-      const d = document.getElementById('catDesc'); d.textContent = catalogue.description; d.style.display='block';
+      const d = document.getElementById('catDesc');
+      d.textContent = catalogue.description; d.style.display = 'block';
     }
     if(catalogue.client_logo_url){
       const row = document.getElementById('logoRow');
-      const divider = document.createElement('div'); divider.className='divider';
+      const sep = document.createElement('div'); sep.className = 'sep';
       const img = document.createElement('img'); img.src = catalogue.client_logo_url; img.alt = catalogue.name;
-      row.appendChild(divider); row.appendChild(img);
+      row.appendChild(sep); row.appendChild(img);
     }
 
-    buStartTexture(document.getElementById('bgCanvas'), catalogue.background_style || 'ember');
-    document.getElementById('bgCanvas').style.filter = 'blur(2px)';
+    const host = document.getElementById('bgHost');
+    const canvas = document.createElement('canvas');
+    host.insertBefore(canvas, host.firstChild);
+    buStartBackground(canvas, catalogue.background_style || 'aurora', catalogue.bg_colors);
 
-    stateMsg.style.display='none';
-    document.getElementById('content').style.display='block';
-    buildRow(drinks);
+    stateMsg.style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    buildRows(drinks, catalogue.categories || []);
   } catch(err){
-    stateMsg.textContent = err.message || "Something went wrong loading this tasting.";
+    stateMsg.textContent = err.message || 'Something went wrong loading this tasting.';
   }
 }
 
-function buildRow(drinks){
-  const track = document.getElementById('rowTrack');
-  const wrap = document.getElementById('rowWrap');
-  const setWidth = drinks.length * ITEM_PITCH;
+function buildRows(drinks, order){
+  const rows = document.getElementById('rows');
+  const groups = new Map();
+  drinks.forEach(d=>{
+    const key = d.category || 'Selection';
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(d);
+  });
 
-  for(let copy=0; copy<3; copy++){
-    drinks.forEach(d=>{
-      const item = document.createElement('div');
-      item.className = 'row-item';
-      const img = document.createElement('img');
-      img.src = d.image_url; img.alt = d.name; img.draggable = false;
+  // honour the menu's declared category order, then anything left over
+  const keys = [];
+  order.forEach(k=>{ if(groups.has(k)) keys.push(k); });
+  groups.forEach((_, k)=>{ if(!keys.includes(k)) keys.push(k); });
+
+  keys.forEach(key=>{
+    const list = groups.get(key);
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+    if(keys.length > 1 || key !== 'Selection'){
       const label = document.createElement('p');
-      label.className = 'ri-name';
-      label.textContent = d.name;
-      item.appendChild(img);
-      item.appendChild(label);
-      item.addEventListener('click', ()=>{ if(!wasDragging) openTakeover(d); });
-      track.appendChild(item);
-    });
+      label.className = 'cat-label'; label.textContent = key;
+      block.appendChild(label);
+    }
+    const mq = document.createElement('div');
+    mq.className = 'marquee';
+    const track = document.createElement('div');
+    track.className = 'mq-track';
+    mq.appendChild(track);
+    block.appendChild(mq);
+    rows.appendChild(block);
+    startMarquee(mq, track, list);
+  });
+}
+
+/* Smooth infinite marquee.
+   Position is advanced in a single rAF loop and written once per frame
+   as a translate3d; drag updates a target which the loop eases toward,
+   which is what removes the stutter from the previous build. */
+function startMarquee(wrap, track, list){
+  let itemW = 0, setW = 0;
+  let pos = 0, target = 0;
+  let dragging = false, moved = false;
+  let lastX = 0, lastT = 0, vel = 0;
+  const DRIFT = 0.022;
+  const FRICTION = 0.94;
+
+  function fill(){
+    track.innerHTML = '';
+    const probe = document.createElement('div');
+    probe.className = 'mq-item';
+    track.appendChild(probe);
+    const style = getComputedStyle(probe);
+    itemW = probe.getBoundingClientRect().width + parseFloat(style.marginRight || 0);
+    probe.remove();
+    if(!itemW || !isFinite(itemW)) itemW = 200;
+
+    // enough copies to cover the viewport twice over
+    const need = Math.max(2, Math.ceil((wrap.clientWidth * 2) / (itemW * list.length)) + 1);
+    for(let c=0;c<need;c++){
+      list.forEach(d=>{
+        const item = document.createElement('div');
+        item.className = 'mq-item';
+        const img = document.createElement('img');
+        img.src = d.image_url; img.alt = d.name; img.draggable = false; img.loading = 'lazy';
+        const nm = document.createElement('p');
+        nm.className = 'mq-name'; nm.textContent = d.name;
+        item.appendChild(img); item.appendChild(nm);
+        item.addEventListener('click', ()=>{ if(!moved) buOpenDrink(d); });
+        track.appendChild(item);
+      });
+    }
+    setW = itemW * list.length;
+    pos = setW; target = setW;
   }
+  fill();
 
-  let offset = setWidth;
-  let dragging = false, startX = 0, startOffset = 0, wasDragging = false, paused = false;
-  let lastT = null;
-  let velocity = 0;          // px/ms carried after release
-  let lastPointerX = 0, lastPointerT = 0;
-  const DRIFT = 0.026;       // idle drift speed, px/ms
-  const FRICTION = 0.94;     // per-frame decay of throw velocity
-
+  let prevT = null;
   function tick(t){
-    if(lastT === null) lastT = t;
-    let dt = t - lastT; lastT = t;
-    if(dt > 60) dt = 60;     // tab was backgrounded; don't lurch
+    if(prevT === null) prevT = t;
+    let dt = t - prevT; prevT = t;
+    if(dt > 60) dt = 60;
 
-    if(!dragging && !paused){
-      if(Math.abs(velocity) > DRIFT){
-        offset += velocity * dt;
-        velocity *= Math.pow(FRICTION, dt/16.67);
-      } else {
-        velocity = 0;
-        offset += DRIFT * dt;
-      }
+    if(dragging){
+      pos += (target - pos) * 0.28;          // ease toward the finger
+    } else if(Math.abs(vel) > DRIFT){
+      pos += vel * dt;
+      vel *= Math.pow(FRICTION, dt/16.67);
+      target = pos;
+    } else {
+      vel = 0;
+      pos += DRIFT * dt;                      // idle drift
+      target = pos;
     }
 
-    if(offset >= setWidth*2) offset -= setWidth;
-    if(offset < 0) offset += setWidth;
-    track.style.transform = 'translate3d(' + (-offset).toFixed(2) + 'px,0,0)';
+    if(setW > 0){
+      while(pos >= setW*2){ pos -= setW; target -= setW; }
+      while(pos < setW)   { pos += setW; target += setW; }
+    }
+    track.style.transform = 'translate3d(' + (-pos).toFixed(2) + 'px,0,0)';
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 
   wrap.addEventListener('pointerdown', e=>{
-    dragging = true; wasDragging = false;
-    startX = e.clientX; startOffset = offset;
-    lastPointerX = e.clientX; lastPointerT = performance.now();
-    velocity = 0;
+    dragging = true; moved = false;
+    lastX = e.clientX; lastT = performance.now(); vel = 0;
+    target = pos;
     wrap.setPointerCapture(e.pointerId); wrap.classList.add('grabbing');
   });
   wrap.addEventListener('pointermove', e=>{
     if(!dragging) return;
-    const dx = e.clientX - startX;
-    if(Math.abs(dx) > 6) wasDragging = true;
-    offset = startOffset - dx;
-
-    const now = performance.now();
-    const dt = now - lastPointerT;
-    if(dt > 0){
-      const inst = -(e.clientX - lastPointerX) / dt;
-      velocity = velocity*0.7 + inst*0.3;   // smooth out jitter
-      lastPointerX = e.clientX; lastPointerT = now;
-    }
+    const dx = e.clientX - lastX;
+    if(Math.abs(dx) > 3) moved = true;
+    target -= dx;
+    const now = performance.now(), dt = now - lastT;
+    if(dt > 0) vel = vel*0.7 + (-dx/dt)*0.3;
+    lastX = e.clientX; lastT = now;
   });
   function release(){
     if(!dragging) return;
     dragging = false; wrap.classList.remove('grabbing');
-    if(performance.now() - lastPointerT > 100) velocity = 0;  // held still: no throw
-    velocity = Math.max(-2.5, Math.min(2.5, velocity));
-    setTimeout(()=>{ wasDragging = false; }, 50);
+    if(performance.now() - lastT > 90) vel = 0;
+    vel = Math.max(-2.6, Math.min(2.6, vel));
+    setTimeout(()=>{ moved = false; }, 40);
   }
   wrap.addEventListener('pointerup', release);
   wrap.addEventListener('pointercancel', release);
 
-  window._buPauseRow = (v)=>{ paused = v; };
-}
-
-function openTakeover(d){
-  document.getElementById('tkImg').src = d.image_url;
-  document.getElementById('tkName').textContent = d.name;
-  document.getElementById('tkDesc').textContent = d.description;
-  document.getElementById('tkType').textContent = d.bean + ' · ' + d.type;
-  const tagsEl = document.getElementById('tkTags');
-  tagsEl.innerHTML = '';
-  (d.tasting_notes||[]).forEach(t=>{
-    const tag = document.createElement('span'); tag.className='tk-tag'; tag.textContent = t;
-    tagsEl.appendChild(tag);
+  let rt = null;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(rt);
+    rt = setTimeout(()=>{ fill(); }, 150);
   });
-  const tk = document.getElementById('takeover');
-  tk.style.display = 'flex';
-  requestAnimationFrame(()=> tk.classList.add('open'));
-  if(window._buPauseRow) window._buPauseRow(true);
 }
-function closeTakeover(){
-  const tk = document.getElementById('takeover');
-  tk.classList.remove('open');
-  setTimeout(()=>{ if(!tk.classList.contains('open')) tk.style.display='none'; }, 360);
-  if(window._buPauseRow) window._buPauseRow(false);
-}
-document.getElementById('closeBtn').addEventListener('click', closeTakeover);
-document.getElementById('takeover').addEventListener('click', e=>{
-  if(e.target.id === 'takeover') closeTakeover();
-});
-document.addEventListener('keydown', e=>{
-  if(e.key === 'Escape') closeTakeover();
-});
 
 boot();
 </script>

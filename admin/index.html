@@ -4,148 +4,163 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Beverage Union — Admin</title>
+<link rel="stylesheet" href="../assets/css/brand.css">
 <style>
-@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Light.woff2') format('woff2');font-weight:300;font-display:swap;}
-@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Regular.woff2') format('woff2');font-weight:400;font-display:swap;}
-@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Medium.woff2') format('woff2');font-weight:500;font-display:swap;}
-@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Semibold.woff2') format('woff2');font-weight:600;font-display:swap;}
-@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Bold.woff2') format('woff2');font-weight:700;font-display:swap;}
-
-:root{
-  --charcoal:#1A1A1A; --charcoal-raised:#242322; --charcoal-hover:#2E2C2A;
-  --steel:#5D8DA0; --cream:#F5EDD8; --parchment:#FAF9F7;
-  --plum:#6B3B7A; --orange:#CC5500;
-  --line: rgba(250,249,247,0.12); --line-strong: rgba(250,249,247,0.24);
-  --text-dim: rgba(250,249,247,0.56); --text-faint: rgba(250,249,247,0.4);
-}
-*{box-sizing:border-box;}
-html,body{margin:0;padding:0;background:var(--charcoal);color:var(--parchment);font-family:'General Sans',sans-serif;}
+:root{ --raised:#242322; --hover:#2E2C2A; }
+body{background:var(--charcoal);}
 input,textarea,select,button{font-family:inherit;}
-button{cursor:pointer;}
+button{cursor:pointer;background:none;border:none;color:inherit;}
 
-/* ---------- gate ---------- */
+/* gate */
 #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--charcoal);z-index:100;}
 .gate-box{width:min(88vw,340px);text-align:center;}
-.gate-box img{width:64px;height:auto;margin-bottom:28px;opacity:0.9;}
-.gate-box p.eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0 0 10px;}
-.gate-box h1{font-size:24px;font-weight:600;margin:0 0 24px;letter-spacing:-0.01em;}
-#passInput{width:100%;background:transparent;border:1px solid var(--line-strong);color:var(--parchment);padding:13px 16px;border-radius:4px;font-size:15px;text-align:center;outline:none;}
+.gate-box img{width:60px;height:auto;margin-bottom:26px;opacity:.9;}
+.gate-box h1{font-size:23px;font-weight:600;margin:0 0 22px;}
+#passInput{width:100%;background:transparent;border:1px solid var(--line-strong);color:var(--parchment);padding:13px 16px;border-radius:5px;font-size:15px;text-align:center;outline:none;}
 #passInput:focus{border-color:var(--steel);}
 #gateError{color:var(--orange);font-size:13px;margin-top:12px;min-height:18px;}
-#gateSubmit{margin-top:16px;width:100%;padding:13px;background:var(--steel);color:var(--charcoal);border:none;border-radius:4px;font-size:14px;font-weight:600;}
-#gateSubmit:hover{opacity:0.85;}
+#gateSubmit{margin-top:15px;width:100%;padding:13px;background:var(--steel);color:var(--charcoal);border-radius:5px;font-size:14px;font-weight:600;}
 
-/* ---------- shell ---------- */
 #app{display:none;}
 #topbar{position:sticky;top:0;background:var(--charcoal);border-bottom:1px solid var(--line);z-index:10;}
-.topbar-inner{max-width:900px;margin:0 auto;padding:20px 24px 0;}
-.brand-row{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
-.brand-row img{width:28px;height:auto;}
-.brand-row p{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0;}
-.tabs{display:flex;gap:4px;}
-.tab-btn{background:none;border:none;color:var(--text-dim);padding:12px 4px;margin-right:24px;font-size:14px;font-weight:500;border-bottom:2px solid transparent;transition:all .2s;}
+.topbar-inner{max-width:1000px;margin:0 auto;padding:18px 20px 0;}
+.brand-row{display:flex;align-items:center;gap:11px;margin-bottom:18px;}
+.brand-row img{width:26px;}
+.brand-row p{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);font-weight:600;margin:0;}
+.tabs{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.tabs .tab-group{display:flex;flex-wrap:wrap;}
+.tab-btn{color:var(--text-dim);padding:11px 2px;margin-right:22px;font-size:13.5px;font-weight:500;border-bottom:2px solid transparent;}
 .tab-btn.active{color:var(--parchment);border-bottom-color:var(--steel);}
-main{max-width:900px;margin:0 auto;padding:36px 24px 100px;}
-.pane{display:none;}
-.pane.active{display:block;}
+.tabs a{font-size:12.5px;color:var(--text-dim);text-decoration:none;padding:11px 2px;}
+main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
+.pane{display:none;} .pane.active{display:block;}
 
-.pane-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
-.pane-header h1{font-size:22px;font-weight:600;margin:0;}
-.pane-header .count{color:var(--text-dim);font-weight:400;font-size:15px;}
-.btn-primary{background:var(--steel);color:var(--charcoal);border:none;padding:11px 20px;border-radius:6px;font-size:13px;font-weight:600;}
-.btn-primary:hover{opacity:0.88;}
-.btn-ghost{background:transparent;color:var(--parchment);border:1px solid var(--line-strong);padding:11px 20px;border-radius:6px;font-size:13px;font-weight:600;}
+.pane-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.pane-header h1{font-size:21px;font-weight:600;margin:0;}
+.pane-header .count{color:var(--text-faint);font-weight:400;font-size:15px;}
+.btn-primary{background:var(--steel);color:var(--charcoal);padding:10px 19px;border-radius:6px;font-size:13px;font-weight:600;}
+.btn-ghost{border:1px solid var(--line-strong);padding:10px 19px;border-radius:6px;font-size:13px;font-weight:600;color:var(--parchment);}
 .btn-ghost:hover{border-color:var(--steel);}
 
-/* ---------- drinks grid ---------- */
-#drinksGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;}
-.drink-card{background:var(--charcoal-raised);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.field{margin-bottom:22px;max-width:520px;}
+.field label{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);font-weight:600;margin-bottom:9px;}
+.field input[type=text],.field textarea,.field select{
+  width:100%;background:var(--raised);border:1px solid var(--line);color:var(--parchment);
+  padding:12px 14px;border-radius:6px;font-size:14.5px;outline:none;}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--steel);}
+.field textarea{resize:vertical;min-height:80px;line-height:1.55;}
+.wide{max-width:none;}
+
+.segmented{display:flex;gap:9px;}
+.seg-btn{flex:1;padding:13px;border-radius:6px;border:1px solid var(--line);background:var(--raised);color:var(--text-dim);font-size:13.5px;font-weight:600;text-align:left;}
+.seg-btn small{display:block;font-weight:400;font-size:10.5px;margin-top:3px;opacity:.75;}
+.seg-btn.active[data-bean="Romance"]{border-color:var(--plum);background:rgba(107,59,122,.18);color:var(--parchment);}
+.seg-btn.active[data-bean="Euphoria"]{border-color:var(--orange);background:rgba(204,85,0,.18);color:var(--parchment);}
+
+.chip-row{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{padding:8px 15px;border-radius:999px;border:1px solid var(--line);color:var(--text-dim);font-size:12.5px;font-weight:600;}
+.chip.active{border-color:var(--steel);color:var(--parchment);background:rgba(93,141,160,.16);}
+
+.tag-wrap{display:flex;flex-wrap:wrap;gap:7px;background:var(--raised);border:1px solid var(--line);border-radius:6px;padding:9px 11px;max-width:520px;}
+.tag-wrap:focus-within{border-color:var(--steel);}
+.tag-chip{display:flex;align-items:center;gap:5px;background:rgba(93,141,160,.2);padding:5px 6px 5px 11px;border-radius:999px;font-size:12.5px;}
+.tag-chip button{color:var(--text-dim);font-size:15px;line-height:1;padding:2px 5px;}
+#tagText{flex:1;min-width:90px;background:none;border:none;color:var(--parchment);font-size:13.5px;outline:none;padding:5px;}
+
+.dropzone{max-width:520px;border:1.5px dashed var(--line-strong);border-radius:8px;padding:26px;text-align:center;position:relative;}
+.dropzone.drag{border-color:var(--steel);background:rgba(93,141,160,.08);}
+.dropzone p{margin:0;font-size:13.5px;color:var(--text-dim);}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+#previewWrap{display:none;text-align:center;margin-top:13px;}
+#previewWrap img{max-width:150px;max-height:150px;object-fit:contain;border-radius:8px;background:var(--cream);}
+#previewWrap p{font-size:11.5px;color:var(--text-faint);margin-top:7px;}
+
+#submitBtn{max-width:520px;width:100%;padding:15px;background:var(--steel);color:var(--charcoal);border-radius:6px;font-size:14.5px;font-weight:600;margin-top:6px;}
+#submitBtn:disabled{opacity:.5;cursor:not-allowed;}
+#formMsg{font-size:13px;margin-top:12px;min-height:18px;}
+#formMsg.err{color:var(--orange);} #formMsg.ok{color:#8fbf9f;}
+
+/* switches */
+.switch-row{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text-dim);cursor:pointer;font-weight:500;}
+.switch-row input,.mini-toggle input{position:absolute;opacity:0;width:0;height:0;}
+.switch{position:relative;width:37px;height:21px;background:var(--hover);border:1px solid var(--line-strong);border-radius:999px;transition:all .2s;flex-shrink:0;}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:var(--text-dim);transition:all .2s;}
+.switch-row input:checked + .switch,.mini-toggle input:checked + .switch{background:rgba(93,141,160,.3);border-color:var(--steel);}
+.switch-row input:checked + .switch::after,.mini-toggle input:checked + .switch::after{transform:translateX(16px);background:var(--steel);}
+.mini-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-faint);cursor:pointer;}
+.mini-toggle .switch{width:30px;height:18px;}
+.mini-toggle .switch::after{width:12px;height:12px;}
+.mini-toggle input:checked + .switch::after{transform:translateX(12px);}
+
+/* drinks grid */
+#drinksGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px;}
+.drink-card{background:var(--raised);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
 .drink-card .thumb{aspect-ratio:1/1;background:var(--cream);display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .drink-card .thumb img{width:100%;height:100%;object-fit:cover;}
-.drink-card .body{padding:14px;}
-.drink-card .name{font-size:15px;font-weight:600;margin:0 0 8px;}
-.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
-.pill{font-size:10.5px;font-weight:600;letter-spacing:.03em;padding:3px 9px;border-radius:999px;}
-.pill.romance{background:rgba(107,59,122,0.22);color:#c99fd6;}
-.pill.euphoria{background:rgba(204,85,0,0.2);color:#f0a869;}
-.pill.type{background:rgba(93,141,160,0.2);color:#9ec4d4;}
-.notes-line{font-size:12px;color:var(--text-dim);margin:0 0 10px;min-height:16px;}
+.drink-card .body{padding:13px;}
+.drink-card .name{font-size:14.5px;font-weight:600;margin:0 0 7px;}
+.pill-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px;}
+.pill{font-size:10px;font-weight:600;padding:3px 8px;border-radius:999px;}
+.pill.romance{background:rgba(107,59,122,.22);color:#c99fd6;}
+.pill.euphoria{background:rgba(204,85,0,.2);color:#f0a869;}
+.pill.type{background:rgba(93,141,160,.2);color:#9ec4d4;}
+.pill.cat{background:rgba(250,249,247,.1);color:var(--text-dim);}
+.notes-line{font-size:11.5px;color:var(--text-faint);margin:0 0 9px;min-height:15px;}
 .card-actions{display:flex;justify-content:space-between;align-items:center;}
-.icon-btn{background:none;border:none;color:var(--text-dim);font-size:12px;padding:4px 8px;}
+.icon-btn{color:var(--text-faint);font-size:11.5px;padding:4px 6px;}
 .icon-btn:hover{color:var(--orange);}
 #emptyState{color:var(--text-dim);font-size:14px;padding:40px 0;text-align:center;}
 
-/* ---------- form (add drink) ---------- */
-.field{margin-bottom:26px;max-width:520px;}
-.field label{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);font-weight:600;margin-bottom:10px;}
-.field input[type=text], .field textarea{width:100%;background:var(--charcoal-raised);border:1px solid var(--line);color:var(--parchment);padding:13px 15px;border-radius:6px;font-size:15px;outline:none;}
-.field input[type=text]:focus, .field textarea:focus{border-color:var(--steel);}
-.field textarea{resize:vertical;min-height:90px;line-height:1.55;}
-.segmented{display:flex;gap:10px;}
-.seg-btn{flex:1;padding:14px;border-radius:6px;border:1px solid var(--line);background:var(--charcoal-raised);color:var(--text-dim);font-size:14px;font-weight:600;text-align:left;}
-.seg-btn small{display:block;font-weight:400;font-size:11px;margin-top:3px;opacity:0.75;}
-.seg-btn.active[data-bean="Romance"]{border-color:var(--plum);background:rgba(107,59,122,0.18);color:var(--parchment);}
-.seg-btn.active[data-bean="Euphoria"]{border-color:var(--orange);background:rgba(204,85,0,0.18);color:var(--parchment);}
-.type-row{display:flex;flex-wrap:wrap;gap:8px;}
-.type-chip{padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text-dim);font-size:13px;}
-.type-chip.active{border-color:var(--steel);color:var(--parchment);background:rgba(93,141,160,0.16);}
-.tag-input-wrap{display:flex;flex-wrap:wrap;gap:8px;background:var(--charcoal-raised);border:1px solid var(--line);border-radius:6px;padding:10px 12px;max-width:520px;}
-.tag-input-wrap:focus-within{border-color:var(--steel);}
-.tag-chip{display:flex;align-items:center;gap:6px;background:rgba(93,141,160,0.2);color:var(--parchment);padding:5px 6px 5px 12px;border-radius:999px;font-size:13px;}
-.tag-chip button{background:none;border:none;color:var(--text-dim);font-size:15px;line-height:1;padding:2px 6px;}
-#tagText{flex:1;min-width:90px;background:none;border:none;color:var(--parchment);font-size:14px;outline:none;padding:5px;}
-.dropzone{max-width:520px;border:1.5px dashed var(--line-strong);border-radius:8px;padding:28px;text-align:center;position:relative;}
-.dropzone.drag{border-color:var(--steel);background:rgba(93,141,160,0.08);}
-.dropzone p{margin:0;font-size:14px;color:var(--text-dim);}
-.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
-#previewWrap{display:none;text-align:center;margin-top:14px;}
-#previewWrap img{max-width:160px;max-height:160px;border-radius:8px;object-fit:contain;background:var(--cream);}
-#previewWrap p{font-size:12px;color:var(--text-dim);margin-top:8px;}
-#submitBtn{max-width:520px;width:100%;padding:16px;background:var(--steel);color:var(--charcoal);border:none;border-radius:6px;font-size:15px;font-weight:600;margin-top:8px;}
-#submitBtn:disabled{opacity:0.5;cursor:not-allowed;}
-#formMsg{font-size:13px;margin-top:14px;min-height:18px;}
-#formMsg.err{color:var(--orange);}
-#formMsg.ok{color:#8fbf9f;}
-.toggle-field{max-width:520px;}
-.switch-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-dim);cursor:pointer;text-transform:none;letter-spacing:0;font-weight:500;}
-.switch-row input{position:absolute;opacity:0;width:0;height:0;}
-.switch{position:relative;width:38px;height:22px;background:var(--charcoal-hover);border:1px solid var(--line-strong);border-radius:999px;transition:all .2s ease;flex-shrink:0;}
-.switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text-dim);transition:all .2s ease;}
-.switch-row input:checked + .switch{background:rgba(93,141,160,0.3);border-color:var(--steel);}
-.switch-row input:checked + .switch::after{transform:translateX(16px);background:var(--steel);}
-.mini-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-faint);cursor:pointer;}
-.mini-toggle input{position:absolute;opacity:0;width:0;height:0;}
-.mini-toggle .switch{width:30px;height:18px;}
-.mini-toggle .switch::after{width:12px;height:12px;}
-.mini-toggle input:checked + .switch{background:rgba(93,141,160,0.3);border-color:var(--steel);}
-.mini-toggle input:checked + .switch::after{transform:translateX(12px);background:var(--steel);}
-
-/* ---------- catalogues ---------- */
-.cat-card{display:flex;align-items:center;justify-content:space-between;background:var(--charcoal-raised);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px;}
-.cat-card .cat-name{font-size:15px;font-weight:600;margin:0 0 4px;}
-.cat-card .cat-desc{font-size:13px;color:var(--text-dim);margin:0 0 6px;max-width:440px;}
-.cat-card .cat-meta{font-size:12px;color:var(--text-faint);margin:0;}
-.copy-btn{background:transparent;border:1px solid var(--line-strong);color:var(--parchment);padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;}
+/* catalogues */
+.cat-card{display:flex;align-items:center;justify-content:space-between;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:15px 17px;margin-bottom:11px;gap:14px;flex-wrap:wrap;}
+.cat-name{font-size:14.5px;font-weight:600;margin:0 0 3px;}
+.cat-desc{font-size:12.5px;color:var(--text-dim);margin:0 0 5px;max-width:440px;}
+.cat-meta{font-size:11.5px;color:var(--text-faint);margin:0;}
+.cat-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.copy-btn{border:1px solid var(--line-strong);padding:7px 13px;border-radius:6px;font-size:11.5px;font-weight:600;color:var(--parchment);}
 .copy-btn:hover{border-color:var(--steel);}
-#builderPanel{display:none;background:var(--charcoal-raised);border:1px solid var(--line);border-radius:10px;padding:22px;margin-top:20px;}
-.picker-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-.picker-chip{padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--text-dim);font-size:12.5px;font-weight:600;}
-.picker-chip.active{border-color:var(--steel);color:var(--parchment);background:rgba(93,141,160,0.16);}
-.picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;max-height:420px;overflow-y:auto;padding:4px;margin-bottom:20px;}
-.pick-card{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;background:var(--charcoal-hover);transition:border-color .15s ease;}
+
+#builderPanel{display:none;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:20px;margin-top:18px;}
+#builderTitle{font-size:16px;font-weight:600;margin:0 0 18px;}
+
+/* background picker */
+.bg-styles{display:flex;gap:10px;flex-wrap:wrap;}
+.bg-opt{width:96px;cursor:pointer;}
+.bg-opt canvas{width:96px;height:62px;border-radius:9px;border:2px solid transparent;display:block;object-fit:cover;}
+.bg-opt.active canvas{border-color:var(--steel);}
+.bg-opt p{font-size:11px;color:var(--text-dim);margin:5px 0 0;text-align:center;}
+.palette-row{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px;}
+.pal-opt{cursor:pointer;border:2px solid transparent;border-radius:8px;padding:3px;}
+.pal-opt.active{border-color:var(--steel);}
+.pal-swatch{display:flex;width:62px;height:26px;border-radius:5px;overflow:hidden;}
+.pal-swatch span{flex:1;}
+.pal-opt p{font-size:10px;color:var(--text-faint);margin:4px 0 0;text-align:center;}
+.custom-colors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.custom-colors label{font-size:11px;color:var(--text-faint);display:flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0;margin:0;}
+.custom-colors input[type=color]{width:38px;height:30px;border:1px solid var(--line);border-radius:6px;background:none;padding:2px;cursor:pointer;}
+
+/* picker */
+.picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:11px;max-height:400px;overflow-y:auto;padding:4px;margin-bottom:18px;}
+.pick-card{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;background:var(--hover);}
 .pick-card.selected{border-color:var(--steel);}
 .pick-card .thumb{aspect-ratio:1/1;background:var(--cream);}
 .pick-card .thumb img{width:100%;height:100%;object-fit:cover;}
-.pick-card .pname{font-size:12.5px;font-weight:600;padding:8px 9px;margin:0;}
-.pick-card .check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--steel);color:var(--charcoal);display:none;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.pick-card .pname{font-size:12px;font-weight:600;padding:7px 8px;margin:0;}
+.pick-card .check{position:absolute;top:7px;right:7px;width:21px;height:21px;border-radius:50%;background:var(--steel);color:var(--charcoal);display:none;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
 .pick-card.selected .check{display:flex;}
-.texture-row{display:flex;gap:12px;flex-wrap:wrap;}
-.texture-swatch{width:76px;text-align:center;cursor:pointer;}
-.texture-swatch canvas{width:76px;height:76px;border-radius:10px;border:2px solid transparent;display:block;}
-.texture-swatch.active canvas{border-color:var(--steel);}
-.texture-swatch p{font-size:11px;color:var(--text-dim);margin:6px 0 0;}
 
-.divider{border:none;border-top:1px solid var(--line);margin:8px 0 28px;}
+/* categories manager */
+.cat-manage-row{display:flex;align-items:center;justify-content:space-between;background:var(--raised);border:1px solid var(--line);border-radius:8px;padding:12px 15px;margin-bottom:9px;}
+.cat-manage-row p{margin:0;font-size:14px;font-weight:500;}
+.inline-form{display:flex;gap:9px;max-width:520px;margin-bottom:22px;}
+.inline-form input{flex:1;background:var(--raised);border:1px solid var(--line);color:var(--parchment);padding:11px 13px;border-radius:6px;font-size:14px;outline:none;}
+.inline-form input:focus{border-color:var(--steel);}
+
+@media(max-width:620px){
+  .pane-header h1{font-size:19px;}
+  .segmented{flex-direction:column;}
+  #drinksGrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));}
+}
 </style>
 </head>
 <body>
@@ -155,7 +170,7 @@ main{max-width:900px;margin:0 auto;padding:36px 24px 100px;}
     <img src="../assets/logos/bu-mark-light.svg" alt="Beverage Union">
     <p class="eyebrow">Internal tool</p>
     <h1>Enter the passcode</h1>
-    <input type="password" id="passInput" placeholder="••••••" autocomplete="off">
+    <input type="password" id="passInput" placeholder="Passcode" autocomplete="off">
     <button id="gateSubmit">Continue</button>
     <p id="gateError"></p>
   </div>
@@ -166,15 +181,16 @@ main{max-width:900px;margin:0 auto;padding:36px 24px 100px;}
     <div class="topbar-inner">
       <div class="brand-row">
         <img src="../assets/logos/bu-mark-light.svg" alt="">
-        <p>Beverage Union · Admin</p>
+        <p>Beverage Union &#183; Admin</p>
       </div>
-      <div class="tabs" style="justify-content:space-between;display:flex;">
-        <div>
+      <div class="tabs">
+        <div class="tab-group">
           <button class="tab-btn active" data-tab="drinks">Drinks</button>
           <button class="tab-btn" data-tab="add">Add drink</button>
-          <button class="tab-btn" data-tab="catalogues">Catalogues</button>
+          <button class="tab-btn" data-tab="catalogues">Menus</button>
+          <button class="tab-btn" data-tab="cats">Categories</button>
         </div>
-        <a href="../" style="font-size:13px;color:var(--text-dim);text-decoration:none;padding:12px 4px;">View site ↗</a>
+        <a href="../">View site &#8599;</a>
       </div>
     </div>
   </div>
@@ -187,35 +203,39 @@ main{max-width:900px;margin:0 auto;padding:36px 24px 100px;}
         <button class="btn-primary" id="goAddBtn">+ Add drink</button>
       </div>
       <div id="drinksGrid"></div>
-      <div id="emptyState" style="display:none;">No drinks yet — add your first one.</div>
+      <div id="emptyState" style="display:none;">No drinks yet.</div>
     </section>
 
-    <!-- ADD DRINK -->
+    <!-- ADD -->
     <section class="pane" id="pane-add">
       <div class="pane-header"><h1>Add a drink</h1></div>
       <form id="drinkForm">
-        <div class="field"><label for="dName">Name</label><input type="text" id="dName" placeholder="Terra Cloud" required></div>
-        <div class="field"><label for="dDesc">Description</label><textarea id="dDesc" placeholder="A striking, layered fusion of vibrant blue pea coconut water..." required></textarea></div>
+        <div class="field"><label for="dName">Name</label><input type="text" id="dName" required></div>
+        <div class="field"><label for="dDesc">Description</label><textarea id="dDesc" required></textarea></div>
         <div class="field">
           <label>Bean</label>
           <div class="segmented" id="beanSelect">
-            <button type="button" class="seg-btn" data-bean="Romance">Romance<small>Connection · warmth</small></button>
-            <button type="button" class="seg-btn" data-bean="Euphoria">Euphoria<small>Stimulation · lift</small></button>
+            <button type="button" class="seg-btn" data-bean="Romance">Romance<small>Connection</small></button>
+            <button type="button" class="seg-btn" data-bean="Euphoria">Euphoria<small>Stimulation</small></button>
           </div>
         </div>
         <div class="field">
           <label>Type</label>
-          <div class="type-row" id="typeSelect">
-            <button type="button" class="type-chip" data-type="Cold Brew">Cold Brew</button>
-            <button type="button" class="type-chip" data-type="Espresso">Espresso</button>
-            <button type="button" class="type-chip" data-type="Matcha">Matcha</button>
-            <button type="button" class="type-chip" data-type="Iced">Iced</button>
-            <button type="button" class="type-chip" data-type="Dessert">Dessert</button>
+          <div class="chip-row" id="typeSelect">
+            <button type="button" class="chip" data-type="Cold Brew">Cold Brew</button>
+            <button type="button" class="chip" data-type="Espresso">Espresso</button>
+            <button type="button" class="chip" data-type="Matcha">Matcha</button>
+            <button type="button" class="chip" data-type="Iced">Iced</button>
+            <button type="button" class="chip" data-type="Dessert">Dessert</button>
           </div>
         </div>
         <div class="field">
+          <label>Category</label>
+          <div class="chip-row" id="catSelect"></div>
+        </div>
+        <div class="field">
           <label for="tagText">Tasting notes</label>
-          <div class="tag-input-wrap" id="tagWrap"><input type="text" id="tagText" placeholder="Type a note and press Enter"></div>
+          <div class="tag-wrap" id="tagWrap"><input type="text" id="tagText" placeholder="Type a note, press Enter"></div>
         </div>
         <div class="field">
           <label>Drink photo</label>
@@ -225,148 +245,228 @@ main{max-width:900px;margin:0 auto;padding:36px 24px 100px;}
           </div>
           <div id="previewWrap"><img id="previewImg" alt=""><p id="fileName"></p></div>
         </div>
-        <div class="field toggle-field">
-          <label class="switch-row"><input type="checkbox" id="dPublic"><span class="switch"></span> Show on home page</label>
-        </div>
+        <div class="field"><label class="switch-row"><input type="checkbox" id="dPublic"><span class="switch"></span> Show on home page</label></div>
         <button type="submit" id="submitBtn">Add drink</button>
         <p id="formMsg"></p>
       </form>
     </section>
 
-    <!-- CATALOGUES -->
+    <!-- MENUS -->
     <section class="pane" id="pane-catalogues">
       <div class="pane-header">
-        <h1>Catalogues <span class="count" id="catCount"></span></h1>
-        <button class="btn-ghost" id="newCatBtn">+ New catalogue</button>
+        <h1>Menus <span class="count" id="catCount"></span></h1>
+        <button class="btn-ghost" id="newCatBtn">+ New menu</button>
       </div>
       <div id="cataloguesList"></div>
-      <div id="catEmpty" style="display:none;color:var(--text-dim);font-size:14px;padding:20px 0;">No catalogues yet.</div>
+      <div id="catEmpty" style="display:none;color:var(--text-dim);font-size:14px;padding:20px 0;">No menus yet.</div>
 
       <div id="builderPanel">
-        <div class="field" style="max-width:none;"><label for="catName">Catalogue name</label><input type="text" id="catName" placeholder="e.g. The Ritz — August tasting"></div>
-        <div class="field" style="max-width:none;"><label for="catDesc">Description <span style="text-transform:none;font-weight:400;">(optional)</span></label><textarea id="catDesc" placeholder="A short line the client sees under the title" style="min-height:60px;"></textarea></div>
-        <div class="field" style="max-width:none;">
-          <label>Background</label>
-          <div class="texture-row" id="textureRow"></div>
+        <p id="builderTitle">New menu</p>
+        <div class="field wide"><label for="catName">Menu name</label><input type="text" id="catName" placeholder="e.g. The Ritz — August tasting"></div>
+        <div class="field wide"><label for="catDescInput">Description <span style="text-transform:none;font-weight:400;">(optional)</span></label><textarea id="catDescInput" style="min-height:56px;"></textarea></div>
+
+        <div class="field wide">
+          <label>Colour scheme</label>
+          <div class="palette-row" id="paletteRow"></div>
+          <div class="custom-colors">
+            <label>Light 1 <input type="color" id="col1"></label>
+            <label>Light 2 <input type="color" id="col2"></label>
+            <label>Base <input type="color" id="col3"></label>
+          </div>
         </div>
-        <div class="field toggle-field">
-          <label class="switch-row"><input type="checkbox" id="catPublic"><span class="switch"></span> Show on home page</label>
+
+        <div class="field wide">
+          <label>Animation</label>
+          <div class="bg-styles" id="bgStyleRow"></div>
         </div>
-        <div class="field" style="max-width:none;">
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
-            <label style="margin:0;">Choose drinks <span id="pickCount" style="text-transform:none;font-weight:400;color:var(--steel);"></span></label>
-            <select id="importSelect" style="background:var(--charcoal-hover);color:var(--parchment);border:1px solid var(--line);border-radius:6px;padding:7px 10px;font-size:12px;">
-              <option value="">Import all from…</option>
+
+        <div class="field wide">
+          <label>Categories shown in this menu</label>
+          <div class="chip-row" id="menuCatRow"></div>
+        </div>
+
+        <div class="field wide"><label class="switch-row"><input type="checkbox" id="catPublic"><span class="switch"></span> Show on home page</label></div>
+
+        <div class="field wide">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;margin-bottom:9px;">
+            <label style="margin:0;">Drinks <span id="pickCount" style="text-transform:none;font-weight:400;color:var(--steel);"></span></label>
+            <select id="importSelect" style="width:auto;background:var(--hover);color:var(--parchment);border:1px solid var(--line);border-radius:6px;padding:7px 9px;font-size:12px;">
+              <option value="">Import all from&#8230;</option>
             </select>
           </div>
-          <input type="text" id="pickerSearch" placeholder="Search drinks by name…" style="width:100%;background:var(--charcoal-raised);border:1px solid var(--line);color:var(--parchment);padding:11px 14px;border-radius:6px;font-size:14px;outline:none;margin-bottom:10px;">
-          <div class="picker-filters" id="pickerFilters"></div>
+          <input type="text" id="pickerSearch" placeholder="Search drinks&#8230;" style="width:100%;background:var(--raised);border:1px solid var(--line);color:var(--parchment);padding:10px 13px;border-radius:6px;font-size:13.5px;outline:none;margin-bottom:9px;">
+          <div class="chip-row" id="pickerFilters" style="margin-bottom:11px;"></div>
           <div class="picker-grid" id="drinkPicker"></div>
         </div>
-        <div style="display:flex;gap:10px;">
-          <button class="btn-primary" id="saveCatBtn">Save catalogue</button>
+
+        <div style="display:flex;gap:9px;flex-wrap:wrap;">
+          <button class="btn-primary" id="saveCatBtn">Save menu</button>
           <button class="btn-ghost" id="cancelCatBtn" type="button">Cancel</button>
         </div>
-        <p id="catMsg" style="font-size:13px;margin-top:12px;min-height:18px;"></p>
+        <p id="catMsg" style="font-size:13px;margin-top:11px;min-height:18px;"></p>
       </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="pane" id="pane-cats">
+      <div class="pane-header"><h1>Categories</h1></div>
+      <p style="color:var(--text-dim);font-size:13.5px;margin:0 0 20px;max-width:520px;line-height:1.6;">
+        Categories group drinks into rows inside a menu. Add whatever fits how you present &#8212; Hot, Cold, Coffee, Cold Brew, or anything else.
+      </p>
+      <div class="inline-form">
+        <input type="text" id="newCatName" placeholder="New category name">
+        <button class="btn-primary" id="addCatBtn">Add</button>
+      </div>
+      <div id="catManageList"></div>
+      <p id="catManageMsg" style="font-size:13px;margin-top:11px;min-height:18px;"></p>
     </section>
   </main>
 </div>
 
-<script src="../assets/js/textures.js"></script>
+<script src="../assets/js/backgrounds.js"></script>
 <script>
 const SUPABASE_URL = "https://dmxpltiomvluuooojayh.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRteHBsdGlvbXZsdXVvb29qYXloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwNDQ2MzgsImV4cCI6MjEwMjYyMDYzOH0.t8zKwbbO05VhAaJFuRZBTMmkrHffZWgOwLWtkznnTFY";
 const PASSCODE = "BU@123";
-let allDrinks = [];
+
+let allDrinks = [], allCatalogues = [], allCats = [];
 
 function apiHeaders(extra){
-  return Object.assign({ 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY }, extra||{});
+  return Object.assign({ apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }, extra||{});
 }
 function friendlyError(err){
-  if(location.protocol === 'file:'){
-    return "This page was opened directly from a file (file://) — the database blocks that for security. It needs to be served from a real URL.";
-  }
-  return err.message || "Something went wrong.";
+  if(location.protocol === 'file:') return 'Opened as a local file — this needs to run from the live URL.';
+  return err.message || 'Something went wrong.';
 }
 
-// ---------- gate ----------
-const gate = document.getElementById('gate');
-const app = document.getElementById('app');
+/* ---------- gate ---------- */
+const gate = document.getElementById('gate'), app = document.getElementById('app');
 const passInput = document.getElementById('passInput');
-const gateError = document.getElementById('gateError');
 function tryUnlock(){
   if(passInput.value === PASSCODE){
     sessionStorage.setItem('bu_admin_ok','1');
-    gate.style.display='none'; app.style.display='block';
-    boot();
-  } else { gateError.textContent = "That's not it. Try again."; }
+    gate.style.display='none'; app.style.display='block'; boot();
+  } else { document.getElementById('gateError').textContent = "That's not it. Try again."; }
 }
 document.getElementById('gateSubmit').addEventListener('click', tryUnlock);
 passInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
-if(sessionStorage.getItem('bu_admin_ok') === '1'){
-  gate.style.display='none'; app.style.display='block'; setTimeout(boot,0);
-}
+if(sessionStorage.getItem('bu_admin_ok')==='1'){ gate.style.display='none'; app.style.display='block'; setTimeout(boot,0); }
 
-function boot(){ loadDrinks(); loadCatalogues(); }
+async function boot(){ await loadCategories(); await loadDrinks(); await loadCatalogues(); }
 
-// ---------- tabs ----------
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=> switchTab(btn.dataset.tab));
-});
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab-btn').forEach(b=> b.addEventListener('click', ()=> switchTab(b.dataset.tab)));
 document.getElementById('goAddBtn').addEventListener('click', ()=> switchTab('add'));
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
-  document.querySelectorAll('.pane').forEach(p=> p.classList.toggle('active', p.id === 'pane-'+tab));
+  document.querySelectorAll('.pane').forEach(p=> p.classList.toggle('active', p.id==='pane-'+tab));
 }
 
-// ---------- load drinks ----------
+/* ---------- categories ---------- */
+async function loadCategories(){
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name,sort_order&order=sort_order.asc', { headers: apiHeaders() });
+    allCats = res.ok ? await res.json() : [];
+  } catch(e){ allCats = []; }
+  renderCatManage(); renderDrinkCatChips();
+}
+function renderCatManage(){
+  const list = document.getElementById('catManageList');
+  list.innerHTML = '';
+  if(allCats.length===0){ list.innerHTML = '<p style="color:var(--text-faint);font-size:13px;">No categories yet.</p>'; return; }
+  allCats.forEach(c=>{
+    const row = document.createElement('div');
+    row.className='cat-manage-row';
+    row.innerHTML = '<p></p><button class="icon-btn">Delete</button>';
+    row.querySelector('p').textContent = c.name;
+    row.querySelector('button').addEventListener('click', ()=> deleteCategory(c.id, c.name));
+    list.appendChild(row);
+  });
+}
+document.getElementById('addCatBtn').addEventListener('click', async ()=>{
+  const input = document.getElementById('newCatName');
+  const name = input.value.trim();
+  const msg = document.getElementById('catManageMsg');
+  msg.textContent=''; msg.style.color='var(--orange)';
+  if(!name){ msg.textContent='Give the category a name.'; return; }
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/categories', {
+      method:'POST', headers: apiHeaders({'Content-Type':'application/json'}),
+      body: JSON.stringify({ name, sort_order: allCats.length + 1 })
+    });
+    if(!res.ok) throw new Error(res.status===409 ? 'That category already exists.' : 'Could not add category.');
+    input.value='';
+    await loadCategories();
+  } catch(err){ msg.textContent = friendlyError(err); }
+});
+async function deleteCategory(id, name){
+  if(!confirm('Delete category "' + name + '"? Drinks keep their data but lose this grouping.')) return;
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/categories?id=eq.' + id, { method:'DELETE', headers: apiHeaders() });
+    if(!res.ok) throw new Error('Delete failed.');
+    await loadCategories();
+  } catch(err){ alert(friendlyError(err)); }
+}
+function renderDrinkCatChips(){
+  const row = document.getElementById('catSelect');
+  row.innerHTML='';
+  allCats.forEach(c=>{
+    const b = document.createElement('button');
+    b.type='button'; b.className='chip'; b.dataset.cat=c.name; b.textContent=c.name;
+    b.addEventListener('click', ()=>{
+      row.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); selectedCategory = c.name;
+    });
+    row.appendChild(b);
+  });
+}
+
+/* ---------- drinks ---------- */
 async function loadDrinks(){
   try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,tasting_notes,is_public,created_at&order=created_at.desc', { headers: apiHeaders() });
+    const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,category,tasting_notes,is_public,created_at&order=created_at.desc', { headers: apiHeaders() });
     if(!res.ok) throw new Error('Could not load drinks (' + res.status + ')');
     allDrinks = await res.json();
     renderDrinks();
   } catch(err){
-    console.error(err);
-    document.getElementById('drinksGrid').innerHTML = '';
-    document.getElementById('emptyState').style.display='block';
-    document.getElementById('emptyState').textContent = friendlyError(err);
+    document.getElementById('drinksGrid').innerHTML='';
+    const es = document.getElementById('emptyState');
+    es.style.display='block'; es.textContent = friendlyError(err);
   }
 }
 function renderDrinks(){
-  const grid = document.getElementById('drinksGrid');
-  const empty = document.getElementById('emptyState');
+  const grid = document.getElementById('drinksGrid'), empty = document.getElementById('emptyState');
   document.getElementById('drinkCount').textContent = allDrinks.length ? '(' + allDrinks.length + ')' : '';
-  grid.innerHTML = '';
-  if(allDrinks.length === 0){ empty.style.display='block'; empty.textContent='No drinks yet — add your first one.'; return; }
+  grid.innerHTML='';
+  if(!allDrinks.length){ empty.style.display='block'; empty.textContent='No drinks yet.'; return; }
   empty.style.display='none';
   allDrinks.forEach(d=>{
-    const card = document.createElement('div');
-    card.className='drink-card';
-    const beanClass = d.bean === 'Romance' ? 'romance' : 'euphoria';
-    const notes = (d.tasting_notes||[]).join(', ');
-    card.innerHTML = `
-      <div class="thumb"><img src="${d.image_url}" alt="${d.name}"></div>
-      <div class="body">
-        <p class="name">${d.name}</p>
-        <div class="pill-row"><span class="pill ${beanClass}">${d.bean}</span><span class="pill type">${d.type}</span></div>
-        <p class="notes-line">${notes}</p>
-        <div class="card-actions">
-          <label class="mini-toggle"><input type="checkbox" data-vis-id="${d.id}" ${d.is_public?'checked':''}><span class="switch"></span>On home</label>
-          <button class="icon-btn" data-id="${d.id}">Delete</button>
-        </div>
-      </div>`;
-    card.querySelector('[data-vis-id]').addEventListener('change', (e)=> toggleDrinkVisibility(d.id, e.target.checked));
+    const card = document.createElement('div'); card.className='drink-card';
+    const beanClass = d.bean==='Romance' ? 'romance' : 'euphoria';
+    const catPill = d.category ? '<span class="pill cat">' + d.category + '</span>' : '';
+    card.innerHTML =
+      '<div class="thumb"><img alt=""></div>' +
+      '<div class="body">' +
+        '<p class="name"></p>' +
+        '<div class="pill-row"><span class="pill ' + beanClass + '">' + d.bean + '</span><span class="pill type">' + d.type + '</span>' + catPill + '</div>' +
+        '<p class="notes-line"></p>' +
+        '<div class="card-actions">' +
+          '<label class="mini-toggle"><input type="checkbox" ' + (d.is_public?'checked':'') + '><span class="switch"></span>On home</label>' +
+          '<button class="icon-btn">Delete</button>' +
+        '</div>' +
+      '</div>';
+    card.querySelector('img').src = d.image_url;
+    card.querySelector('.name').textContent = d.name;
+    card.querySelector('.notes-line').textContent = (d.tasting_notes||[]).join(', ');
+    card.querySelector('.mini-toggle input').addEventListener('change', e=> patchDrink(d.id, { is_public: e.target.checked }));
     card.querySelector('.icon-btn').addEventListener('click', ()=> deleteDrink(d.id, d.name));
     grid.appendChild(card);
   });
 }
-async function toggleDrinkVisibility(id, val){
+async function patchDrink(id, body){
   try{
     const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=eq.' + id, {
-      method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}),
-      body: JSON.stringify({ is_public: val })
+      method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}), body: JSON.stringify(body)
     });
     if(!res.ok) throw new Error('Update failed');
   } catch(err){ alert(friendlyError(err)); }
@@ -375,35 +475,32 @@ async function deleteDrink(id, name){
   if(!confirm('Delete "' + name + '"? This cannot be undone.')) return;
   try{
     const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=eq.' + id, { method:'DELETE', headers: apiHeaders() });
-    if(!res.ok) throw new Error('Delete failed (' + res.status + ')');
+    if(!res.ok) throw new Error('Delete failed');
     loadDrinks();
   } catch(err){ alert(friendlyError(err)); }
 }
 
-// ---------- bean / type selectors ----------
-let selectedBean = null, selectedType = null;
+/* ---------- add drink form ---------- */
+let selectedBean=null, selectedType=null, selectedCategory=null, tags=[], selectedFile=null;
 document.querySelectorAll('#beanSelect .seg-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('#beanSelect .seg-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active'); selectedBean = btn.dataset.bean;
   });
 });
-document.querySelectorAll('#typeSelect .type-chip').forEach(btn=>{
+document.querySelectorAll('#typeSelect .chip').forEach(btn=>{
   btn.addEventListener('click', ()=>{
-    document.querySelectorAll('#typeSelect .type-chip').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('#typeSelect .chip').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active'); selectedType = btn.dataset.type;
   });
 });
-
-// ---------- tags ----------
-let tags = [];
-const tagWrap = document.getElementById('tagWrap');
-const tagText = document.getElementById('tagText');
+const tagWrap = document.getElementById('tagWrap'), tagText = document.getElementById('tagText');
 function renderTags(){
   tagWrap.querySelectorAll('.tag-chip').forEach(el=>el.remove());
   tags.forEach((t,i)=>{
     const chip = document.createElement('span'); chip.className='tag-chip';
-    chip.innerHTML = t + ' <button type="button" aria-label="Remove">×</button>';
+    chip.innerHTML = '<span></span><button type="button">&times;</button>';
+    chip.querySelector('span').textContent = t;
     chip.querySelector('button').addEventListener('click', ()=>{ tags.splice(i,1); renderTags(); });
     tagWrap.insertBefore(chip, tagText);
   });
@@ -411,177 +508,202 @@ function renderTags(){
 tagText.addEventListener('keydown', e=>{
   if(e.key==='Enter'){ e.preventDefault(); const v=tagText.value.trim(); if(v){ tags.push(v); tagText.value=''; renderTags(); } }
 });
-
-// ---------- file drop ----------
-const dropzone = document.getElementById('dropzone');
-const fileInput = document.getElementById('fileInput');
-const previewWrap = document.getElementById('previewWrap');
-const previewImg = document.getElementById('previewImg');
-const fileNameEl = document.getElementById('fileName');
-let selectedFile = null;
+const dropzone = document.getElementById('dropzone'), fileInput = document.getElementById('fileInput');
 function handleFile(f){
   if(!f) return;
   selectedFile = f;
-  previewImg.src = URL.createObjectURL(f);
-  fileNameEl.textContent = f.name;
-  previewWrap.style.display='block';
+  document.getElementById('previewImg').src = URL.createObjectURL(f);
+  document.getElementById('fileName').textContent = f.name;
+  document.getElementById('previewWrap').style.display='block';
 }
 fileInput.addEventListener('change', e=> handleFile(e.target.files[0]));
 dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
 dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
 dropzone.addEventListener('drop', e=>{ e.preventDefault(); dropzone.classList.remove('drag'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
 
-// ---------- submit add-drink ----------
-const form = document.getElementById('drinkForm');
-const submitBtn = document.getElementById('submitBtn');
-const formMsg = document.getElementById('formMsg');
-form.addEventListener('submit', async (e)=>{
+document.getElementById('drinkForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  formMsg.className=''; formMsg.textContent='';
+  const msg = document.getElementById('formMsg'); msg.className=''; msg.textContent='';
+  const submitBtn = document.getElementById('submitBtn');
   const name = document.getElementById('dName').value.trim();
   const description = document.getElementById('dDesc').value.trim();
-  if(!name || !description){ return showErr('Name and description are required.'); }
-  if(!selectedBean){ return showErr('Choose a bean: Romance or Euphoria.'); }
-  if(!selectedType){ return showErr('Choose a type.'); }
-  if(!selectedFile){ return showErr('Add a photo of the drink.'); }
+  const showErr = m=>{ msg.className='err'; msg.textContent=m; };
+  if(!name || !description) return showErr('Name and description are required.');
+  if(!selectedBean) return showErr('Choose a bean.');
+  if(!selectedType) return showErr('Choose a type.');
+  if(!selectedFile) return showErr('Add a photo.');
 
-  submitBtn.disabled = true; submitBtn.textContent = 'Adding…';
+  submitBtn.disabled=true; submitBtn.textContent='Adding…';
   try{
-    const safeName = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-    const fileExt = (selectedFile.name.split('.').pop() || 'png').toLowerCase();
-    const filePath = safeName + '-' + Date.now() + '.' + fileExt;
-    const uploadRes = await fetch(SUPABASE_URL + '/storage/v1/object/drink-images/' + filePath, {
+    const safe = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const ext = (selectedFile.name.split('.').pop()||'png').toLowerCase();
+    const path = safe + '-' + Date.now() + '.' + ext;
+    const up = await fetch(SUPABASE_URL + '/storage/v1/object/drink-images/' + path, {
       method:'POST', headers: apiHeaders({'Content-Type': selectedFile.type || 'image/png'}), body: selectedFile
     });
-    if(!uploadRes.ok) throw new Error('Image upload failed (' + uploadRes.status + ')');
-    const imageUrl = SUPABASE_URL + '/storage/v1/object/public/drink-images/' + filePath;
-    const insertRes = await fetch(SUPABASE_URL + '/rest/v1/drinks', {
+    if(!up.ok) throw new Error('Image upload failed (' + up.status + ')');
+    const imageUrl = SUPABASE_URL + '/storage/v1/object/public/drink-images/' + path;
+    const ins = await fetch(SUPABASE_URL + '/rest/v1/drinks', {
       method:'POST', headers: apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
-      body: JSON.stringify({ name, description, image_url: imageUrl, bean: selectedBean, type: selectedType, tasting_notes: tags, is_public: document.getElementById('dPublic').checked })
+      body: JSON.stringify({ name, description, image_url:imageUrl, bean:selectedBean, type:selectedType,
+        category:selectedCategory, tasting_notes:tags, is_public: document.getElementById('dPublic').checked })
     });
-    if(!insertRes.ok) throw new Error('Saving drink failed (' + insertRes.status + ')');
-    formMsg.className='ok'; formMsg.textContent = name + ' was added.';
-    form.reset(); selectedBean=null; selectedType=null; tags=[]; selectedFile=null;
-    document.querySelectorAll('.seg-btn, .type-chip').forEach(b=>b.classList.remove('active'));
-    renderTags(); previewWrap.style.display='none';
+    if(!ins.ok) throw new Error('Saving drink failed (' + ins.status + ')');
+    msg.className='ok'; msg.textContent = name + ' was added.';
+    e.target.reset();
+    selectedBean=null; selectedType=null; selectedCategory=null; tags=[]; selectedFile=null;
+    document.querySelectorAll('.seg-btn, #typeSelect .chip, #catSelect .chip').forEach(b=>b.classList.remove('active'));
+    renderTags(); document.getElementById('previewWrap').style.display='none';
     loadDrinks();
   } catch(err){ showErr(friendlyError(err)); }
-  finally{ submitBtn.disabled = false; submitBtn.textContent = 'Add drink'; }
+  finally{ submitBtn.disabled=false; submitBtn.textContent='Add drink'; }
 });
-function showErr(msg){ formMsg.className='err'; formMsg.textContent = msg; }
 
-// ---------- catalogues ----------
-let allCatalogues = [];
+/* ---------- catalogues ---------- */
 async function loadCatalogues(){
   try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues?select=id,name,description,client_logo_url,drink_ids,background_style,is_public,created_at&order=created_at.desc', { headers: apiHeaders() });
-    if(!res.ok) throw new Error('Could not load catalogues (' + res.status + ')');
+    const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues?select=id,name,description,drink_ids,background_style,bg_colors,categories,is_public,created_at&order=created_at.desc', { headers: apiHeaders() });
+    if(!res.ok) throw new Error('Could not load menus (' + res.status + ')');
     allCatalogues = await res.json();
     renderCatalogues();
   } catch(err){
     document.getElementById('cataloguesList').innerHTML='';
-    document.getElementById('catEmpty').style.display='block';
-    document.getElementById('catEmpty').textContent = friendlyError(err);
+    const e2 = document.getElementById('catEmpty'); e2.style.display='block'; e2.textContent = friendlyError(err);
   }
 }
 function renderCatalogues(){
-  const list = document.getElementById('cataloguesList');
-  const empty = document.getElementById('catEmpty');
+  const list = document.getElementById('cataloguesList'), empty = document.getElementById('catEmpty');
   document.getElementById('catCount').textContent = allCatalogues.length ? '(' + allCatalogues.length + ')' : '';
-  list.innerHTML = '';
-  if(allCatalogues.length === 0){ empty.style.display='block'; empty.textContent='No catalogues yet.'; return; }
+  list.innerHTML='';
+  if(!allCatalogues.length){ empty.style.display='block'; empty.textContent='No menus yet.'; return; }
   empty.style.display='none';
   allCatalogues.forEach(c=>{
     const link = location.origin + '/c/?id=' + c.id;
     const row = document.createElement('div'); row.className='cat-card';
-    const descLine = c.description ? `<p class="cat-desc">${c.description}</p>` : '';
-    row.innerHTML = `<div><p class="cat-name">${c.name}</p>${descLine}<p class="cat-meta">${(c.drink_ids||[]).length} drinks · ${new Date(c.created_at).toLocaleDateString()}</p></div>
-      <div style="display:flex;align-items:center;gap:14px;">
-        <label class="mini-toggle"><input type="checkbox" data-cat-vis="${c.id}" ${c.is_public?'checked':''}><span class="switch"></span>On home</label>
-        <button class="copy-btn">Copy link</button>
-      </div>`;
-    row.querySelector('[data-cat-vis]').addEventListener('change', (e)=> toggleCatalogueVisibility(c.id, e.target.checked));
-    row.querySelector('.copy-btn').addEventListener('click', async ()=>{
-      const btn = row.querySelector('.copy-btn');
-      try{
-        await navigator.clipboard.writeText(link);
-        btn.textContent = 'Copied';
-        setTimeout(()=> btn.textContent='Copy link', 1500);
-      } catch(err){
-        prompt('Clipboard was blocked — copy this link manually:', link);
-      }
+    row.innerHTML =
+      '<div><p class="cat-name"></p><p class="cat-desc"></p><p class="cat-meta"></p></div>' +
+      '<div class="cat-actions">' +
+        '<label class="mini-toggle"><input type="checkbox" ' + (c.is_public?'checked':'') + '><span class="switch"></span>On home</label>' +
+        '<button class="copy-btn edit">Edit</button>' +
+        '<button class="copy-btn copy">Copy link</button>' +
+        '<button class="icon-btn del">Delete</button>' +
+      '</div>';
+    row.querySelector('.cat-name').textContent = c.name;
+    const dEl = row.querySelector('.cat-desc');
+    if(c.description) dEl.textContent = c.description; else dEl.remove();
+    row.querySelector('.cat-meta').textContent = (c.drink_ids||[]).length + ' drinks · ' + new Date(c.created_at).toLocaleDateString();
+    row.querySelector('.mini-toggle input').addEventListener('change', e=> patchCatalogue(c.id, { is_public: e.target.checked }));
+    row.querySelector('.edit').addEventListener('click', ()=> openBuilder(c));
+    row.querySelector('.del').addEventListener('click', ()=> deleteCatalogue(c.id, c.name));
+    row.querySelector('.copy').addEventListener('click', async ()=>{
+      const btn = row.querySelector('.copy');
+      try{ await navigator.clipboard.writeText(link); btn.textContent='Copied'; setTimeout(()=>btn.textContent='Copy link',1500); }
+      catch(err){ prompt('Copy this link:', link); }
     });
     list.appendChild(row);
   });
 }
-let pickedIds = new Set();
-let pickerFilter = 'All';
-let pickerSearch = '';
-let selectedTexture = 'ember';
-let textureInstances = [];
-
-function renderTexturePicker(){
-  textureInstances.forEach(t=>t.stop());
-  textureInstances = [];
-  const row = document.getElementById('textureRow');
-  row.innerHTML = '';
-  Object.keys(BU_TEXTURES).forEach(key=>{
-    const cfg = BU_TEXTURES[key];
-    const swatch = document.createElement('div');
-    swatch.className = 'texture-swatch' + (key===selectedTexture ? ' active' : '');
-    const canvas = document.createElement('canvas');
-    swatch.appendChild(canvas);
-    const label = document.createElement('p');
-    label.textContent = cfg.label;
-    swatch.appendChild(label);
-    swatch.addEventListener('click', ()=>{ selectedTexture = key; renderTexturePicker(); });
-    row.appendChild(swatch);
-    textureInstances.push(buStartTexture(canvas, key));
-  });
-}
-
-async function toggleCatalogueVisibility(id, val){
+async function patchCatalogue(id, body){
   try{
     const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues?id=eq.' + id, {
-      method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}),
-      body: JSON.stringify({ is_public: val })
+      method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}), body: JSON.stringify(body)
     });
     if(!res.ok) throw new Error('Update failed');
   } catch(err){ alert(friendlyError(err)); }
 }
+async function deleteCatalogue(id, name){
+  if(!confirm('Delete menu "' + name + '"? The shared link will stop working.')) return;
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues?id=eq.' + id, { method:'DELETE', headers: apiHeaders() });
+    if(!res.ok) throw new Error('Delete failed');
+    loadCatalogues();
+  } catch(err){ alert(friendlyError(err)); }
+}
+
+/* ---------- builder ---------- */
+let pickedIds = new Set(), pickerFilter='All', pickerSearch='';
+let bgStyle='aurora', bgColors=['#CC5500','#F0A24B','#2A1006'];
+let menuCats = new Set();
+let editingId = null;
+let bgPreviews = [];
+
+function renderPalettes(){
+  const row = document.getElementById('paletteRow'); row.innerHTML='';
+  BU_PALETTES.forEach(p=>{
+    const opt = document.createElement('div');
+    opt.className = 'pal-opt' + (JSON.stringify(p.colors)===JSON.stringify(bgColors) ? ' active' : '');
+    opt.innerHTML = '<div class="pal-swatch"><span style="background:'+p.colors[0]+'"></span><span style="background:'+p.colors[1]+'"></span><span style="background:'+p.colors[2]+'"></span></div><p></p>';
+    opt.querySelector('p').textContent = p.label;
+    opt.addEventListener('click', ()=>{ bgColors = p.colors.slice(); syncColorInputs(); renderPalettes(); renderBgStyles(); });
+    row.appendChild(opt);
+  });
+}
+function syncColorInputs(){
+  document.getElementById('col1').value = bgColors[0];
+  document.getElementById('col2').value = bgColors[1];
+  document.getElementById('col3').value = bgColors[2];
+}
+['col1','col2','col3'].forEach((id,i)=>{
+  document.getElementById(id).addEventListener('input', e=>{
+    bgColors[i] = e.target.value; renderPalettes(); renderBgStyles();
+  });
+});
+function renderBgStyles(){
+  bgPreviews.forEach(p=>p.stop()); bgPreviews=[];
+  const row = document.getElementById('bgStyleRow'); row.innerHTML='';
+  Object.keys(BU_BG_STYLES).forEach(key=>{
+    const opt = document.createElement('div');
+    opt.className='bg-opt' + (key===bgStyle ? ' active' : '');
+    const cv = document.createElement('canvas');
+    opt.appendChild(cv);
+    const p = document.createElement('p'); p.textContent = BU_BG_STYLES[key].label;
+    opt.appendChild(p);
+    opt.addEventListener('click', ()=>{ bgStyle = key; renderBgStyles(); });
+    row.appendChild(opt);
+    bgPreviews.push(buStartBackground(cv, key, bgColors));
+  });
+}
+function renderMenuCats(){
+  const row = document.getElementById('menuCatRow'); row.innerHTML='';
+  if(!allCats.length){ row.innerHTML='<p style="font-size:12px;color:var(--text-faint);margin:0;">Add categories in the Categories tab first.</p>'; return; }
+  allCats.forEach(c=>{
+    const b = document.createElement('button');
+    b.type='button'; b.className='chip' + (menuCats.has(c.name)?' active':''); b.textContent=c.name;
+    b.addEventListener('click', ()=>{
+      if(menuCats.has(c.name)) menuCats.delete(c.name); else menuCats.add(c.name);
+      b.classList.toggle('active');
+    });
+    row.appendChild(b);
+  });
+}
 function pickerCategories(){
-  const cats = ['All'];
+  const cats=['All'];
   Array.from(new Set(allDrinks.map(d=>d.bean))).forEach(b=>cats.push(b));
   Array.from(new Set(allDrinks.map(d=>d.type))).forEach(t=>{ if(!cats.includes(t)) cats.push(t); });
   return cats;
 }
 function renderPickerFilters(){
-  const row = document.getElementById('pickerFilters');
-  row.innerHTML = '';
+  const row = document.getElementById('pickerFilters'); row.innerHTML='';
   pickerCategories().forEach(c=>{
     const chip = document.createElement('button');
-    chip.type='button'; chip.className='picker-chip' + (c===pickerFilter ? ' active' : '');
-    chip.textContent = c;
-    chip.addEventListener('click', ()=>{ pickerFilter = c; renderPickerFilters(); renderPickerGrid(); });
+    chip.type='button'; chip.className='chip' + (c===pickerFilter?' active':''); chip.textContent=c;
+    chip.addEventListener('click', ()=>{ pickerFilter=c; renderPickerFilters(); renderPickerGrid(); });
     row.appendChild(chip);
   });
 }
 function renderPickerGrid(){
-  const grid = document.getElementById('drinkPicker');
-  grid.innerHTML = '';
+  const grid = document.getElementById('drinkPicker'); grid.innerHTML='';
   let list = pickerFilter==='All' ? allDrinks : allDrinks.filter(d=> d.bean===pickerFilter || d.type===pickerFilter);
-  if(pickerSearch){
-    const q = pickerSearch.toLowerCase();
-    list = list.filter(d=> d.name.toLowerCase().includes(q));
-  }
+  if(pickerSearch){ const q=pickerSearch.toLowerCase(); list = list.filter(d=> d.name.toLowerCase().includes(q)); }
   list.forEach(d=>{
     const card = document.createElement('div');
-    card.className = 'pick-card' + (pickedIds.has(d.id) ? ' selected' : '');
-    card.innerHTML = `<div class="thumb"><img src="${d.image_url}" alt=""></div><p class="pname">${d.name}</p><div class="check">✓</div>`;
+    card.className='pick-card' + (pickedIds.has(d.id)?' selected':'');
+    card.innerHTML = '<div class="thumb"><img alt=""></div><p class="pname"></p><div class="check">&#10003;</div>';
+    card.querySelector('img').src = d.image_url;
+    card.querySelector('.pname').textContent = d.name;
     card.addEventListener('click', ()=>{
       if(pickedIds.has(d.id)) pickedIds.delete(d.id); else pickedIds.add(d.id);
-      card.classList.toggle('selected');
-      updatePickCount();
+      card.classList.toggle('selected'); updatePickCount();
     });
     grid.appendChild(card);
   });
@@ -590,57 +712,76 @@ function renderPickerGrid(){
 function updatePickCount(){
   document.getElementById('pickCount').textContent = pickedIds.size ? '· ' + pickedIds.size + ' selected' : '';
 }
-document.getElementById('pickerSearch').addEventListener('input', (e)=>{
-  pickerSearch = e.target.value.trim();
-  renderPickerGrid();
-});
+document.getElementById('pickerSearch').addEventListener('input', e=>{ pickerSearch = e.target.value.trim(); renderPickerGrid(); });
 function populateImportSelect(){
   const sel = document.getElementById('importSelect');
   sel.innerHTML = '<option value="">Import all from…</option>';
   allCatalogues.forEach(c=>{
-    const opt = document.createElement('option');
-    opt.value = c.id; opt.textContent = c.name;
-    sel.appendChild(opt);
+    if(c.id === editingId) return;
+    const o = document.createElement('option'); o.value=c.id; o.textContent=c.name; sel.appendChild(o);
   });
 }
-document.getElementById('importSelect').addEventListener('change', (e)=>{
-  const cat = allCatalogues.find(c=>c.id === e.target.value);
-  if(cat){ (cat.drink_ids||[]).forEach(id=> pickedIds.add(id)); renderPickerGrid(); }
-  e.target.value = '';
+document.getElementById('importSelect').addEventListener('change', e=>{
+  const cat = allCatalogues.find(c=>c.id===e.target.value);
+  if(cat){ (cat.drink_ids||[]).forEach(id=>pickedIds.add(id)); renderPickerGrid(); }
+  e.target.value='';
 });
-document.getElementById('newCatBtn').addEventListener('click', ()=>{
+
+function openBuilder(existing){
+  editingId = existing ? existing.id : null;
+  document.getElementById('builderTitle').textContent = existing ? 'Edit menu' : 'New menu';
+  document.getElementById('saveCatBtn').textContent = existing ? 'Save changes' : 'Save menu';
+  document.getElementById('catName').value = existing ? existing.name : '';
+  document.getElementById('catDescInput').value = existing && existing.description ? existing.description : '';
+  document.getElementById('catPublic').checked = existing ? !!existing.is_public : false;
+  bgStyle = (existing && existing.background_style) || 'aurora';
+  bgColors = (existing && existing.bg_colors && existing.bg_colors.length>=3) ? existing.bg_colors.slice() : BU_PALETTES[0].colors.slice();
+  menuCats = new Set((existing && existing.categories) || []);
+  pickedIds = new Set((existing && existing.drink_ids) || []);
+  pickerFilter='All'; pickerSearch=''; document.getElementById('pickerSearch').value='';
+  document.getElementById('catMsg').textContent='';
+
+  syncColorInputs(); renderPalettes(); renderBgStyles(); renderMenuCats();
+  populateImportSelect(); renderPickerFilters(); renderPickerGrid();
   document.getElementById('builderPanel').style.display='block';
-  pickedIds = new Set(); pickerFilter='All'; pickerSearch=''; selectedTexture='ember';
-  document.getElementById('pickerSearch').value = '';
-  document.getElementById('catPublic').checked = false;
-  populateImportSelect();
-  renderTexturePicker();
-  renderPickerFilters(); renderPickerGrid();
-});
+  document.getElementById('builderPanel').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+document.getElementById('newCatBtn').addEventListener('click', ()=> openBuilder(null));
 document.getElementById('cancelCatBtn').addEventListener('click', ()=>{
   document.getElementById('builderPanel').style.display='none';
-  textureInstances.forEach(t=>t.stop());
+  bgPreviews.forEach(p=>p.stop()); bgPreviews=[];
 });
 document.getElementById('saveCatBtn').addEventListener('click', async ()=>{
   const name = document.getElementById('catName').value.trim();
-  const description = document.getElementById('catDesc').value.trim();
+  const description = document.getElementById('catDescInput').value.trim();
   const ids = Array.from(pickedIds);
-  const msg = document.getElementById('catMsg');
-  msg.className=''; msg.textContent='';
-  if(!name){ msg.style.color='var(--orange)'; msg.textContent='Give the catalogue a name.'; return; }
-  if(ids.length === 0){ msg.style.color='var(--orange)'; msg.textContent='Choose at least one drink.'; return; }
+  const msg = document.getElementById('catMsg'); msg.style.color='var(--orange)'; msg.textContent='';
+  if(!name){ msg.textContent='Give the menu a name.'; return; }
+  if(!ids.length){ msg.textContent='Choose at least one drink.'; return; }
+
+  const payload = {
+    name, description: description || null, drink_ids: ids,
+    background_style: bgStyle, bg_colors: bgColors,
+    categories: Array.from(menuCats),
+    is_public: document.getElementById('catPublic').checked
+  };
   try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/catalogues', {
-      method:'POST', headers: apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
-      body: JSON.stringify({ name, description: description || null, drink_ids: ids, background_style: selectedTexture, is_public: document.getElementById('catPublic').checked })
-    });
-    if(!res.ok) throw new Error('Saving catalogue failed (' + res.status + ')');
-    document.getElementById('catName').value='';
-    document.getElementById('catDesc').value='';
+    let res;
+    if(editingId){
+      res = await fetch(SUPABASE_URL + '/rest/v1/catalogues?id=eq.' + editingId, {
+        method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}), body: JSON.stringify(payload)
+      });
+    } else {
+      res = await fetch(SUPABASE_URL + '/rest/v1/catalogues', {
+        method:'POST', headers: apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}), body: JSON.stringify(payload)
+      });
+    }
+    if(!res.ok) throw new Error('Saving menu failed (' + res.status + ')');
     document.getElementById('builderPanel').style.display='none';
-    textureInstances.forEach(t=>t.stop());
+    bgPreviews.forEach(p=>p.stop()); bgPreviews=[];
+    editingId = null;
     loadCatalogues();
-  } catch(err){ msg.style.color='var(--orange)'; msg.textContent = friendlyError(err); }
+  } catch(err){ msg.textContent = friendlyError(err); }
 });
 </script>
 </body>

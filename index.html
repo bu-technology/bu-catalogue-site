@@ -2,99 +2,78 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Atlas — Beverage Union</title>
 <link rel="stylesheet" href="assets/css/brand.css">
+<link rel="stylesheet" href="assets/css/shared.css">
 <style>
-.top-nav{display:flex;justify-content:flex-end;padding:20px 24px 0;max-width:1180px;margin:0 auto;}
+body{overflow-x:hidden;}
+.top-nav{display:flex;justify-content:flex-end;padding:18px 22px 0;max-width:1240px;margin:0 auto;}
 .top-nav a{font-size:12px;color:var(--text-faint);text-decoration:none;letter-spacing:.04em;}
 .top-nav a:hover{color:var(--text-dim);}
 
-.page-wrap{max-width:1180px;margin:0 auto;padding:8px 24px 110px;}
-.hero{text-align:center;margin:44px 0 64px;}
-.hero img{width:38px;margin:0 auto 20px;}
-.hero h1{font-size:clamp(38px,6.4vw,62px);}
-.hero p.sub{font-size:14.5px;color:var(--text-dim);max-width:400px;margin:16px auto 0;line-height:1.6;}
+.shell{max-width:1240px;margin:0 auto;padding:0 clamp(16px,4vw,30px) 90px;}
+.hero{text-align:center;margin:clamp(32px,7vh,60px) 0 clamp(40px,7vh,64px);}
+.hero img{width:36px;margin:0 auto 18px;}
+.hero h1{font-size:clamp(32px,7vw,60px);}
+.hero p.sub{font-size:clamp(13px,2.4vw,15px);color:var(--text-dim);max-width:380px;margin:14px auto 0;line-height:1.6;}
 
-.section-head{margin:0 0 20px;}
-.section-head h2{font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;margin:0 0 6px;color:var(--steel);}
-.section-head p{font-size:13px;color:var(--text-faint);margin:0;}
-.rule{border:none;border-top:1px solid var(--line);margin:0 0 26px;}
+.section-head{margin:0 0 16px;}
+.section-head h2{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin:0 0 5px;color:var(--steel);}
+.section-head p{font-size:12.5px;color:var(--text-faint);margin:0;}
+.rule{border:none;border-top:1px solid var(--line);margin:0 0 22px;}
 
-/* menus carousel */
+/* menus */
 .cat-scroll{
-  display:flex;gap:18px;overflow-x:auto;padding:4px 4px 18px;margin-bottom:76px;
-  scroll-snap-type:x proximity;
+  display:flex;gap:16px;overflow-x:auto;padding:2px 2px 16px;margin-bottom:clamp(48px,8vh,72px);
+  scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
 }
-.cat-scroll::-webkit-scrollbar{height:5px;}
+.cat-scroll::-webkit-scrollbar{height:4px;}
 .cat-scroll::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px;}
 .cat-tile{
-  position:relative;flex:0 0 auto;width:268px;height:164px;border-radius:16px;overflow:hidden;
-  cursor:pointer;scroll-snap-align:start;text-decoration:none;
-  transition:transform .4s cubic-bezier(.2,.8,.3,1);
+  position:relative;flex:0 0 auto;width:clamp(220px,64vw,278px);aspect-ratio:16/10;
+  border-radius:16px;overflow:hidden;cursor:pointer;scroll-snap-align:start;text-decoration:none;
+  transition:transform .45s cubic-bezier(.2,.85,.3,1);isolation:isolate;
 }
-.cat-tile:hover{transform:translateY(-4px);}
-.cat-tile canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
-.cat-tile .overlay{
-  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:16px;
-  background:linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.6) 100%);
+.cat-tile:hover{transform:translateY(-5px);}
+.cat-tile canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transform:scale(1.06);}
+.cat-tile .veil{
+  position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;padding:16px;
+  background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.62) 100%);
 }
 .cat-tile .t-name{font-size:16px;font-weight:600;margin:0 0 3px;color:#fff;}
-.cat-tile .t-count{font-size:11.5px;color:rgba(255,255,255,0.78);margin:0;}
+.cat-tile .t-count{font-size:11.5px;color:rgba(255,255,255,.8);margin:0;}
 
-/* drink grid */
-.drink-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:22px;}
-.grid-item{cursor:pointer;}
-.grid-item .frame{
-  aspect-ratio:1/1;border-radius:14px;background:rgba(250,249,247,0.035);border:1px solid var(--line);
-  display:flex;align-items:center;justify-content:center;overflow:hidden;
-  transition:transform .45s cubic-bezier(.2,.8,.3,1), border-color .3s ease, background .3s ease;
+/* infinite grid */
+.ig-viewport{
+  position:relative;height:clamp(400px,62vh,660px);overflow:hidden;cursor:grab;
+  touch-action:none;user-select:none;
+  border:1px solid var(--line);border-radius:18px;background:rgba(250,249,247,.02);
 }
-.grid-item:hover .frame{transform:translateY(-5px);border-color:var(--line-strong);background:rgba(250,249,247,0.06);}
-.grid-item .frame img{
-  max-width:76%;max-height:76%;object-fit:contain;
-  transition:transform .45s cubic-bezier(.2,.8,.3,1);
-  filter:drop-shadow(0 14px 20px rgba(0,0,0,0.45));
+.ig-viewport.grabbing{cursor:grabbing;}
+.ig-layer{position:absolute;inset:0;}
+.ig-cell{position:absolute;top:0;left:0;will-change:transform;cursor:pointer;}
+.ig-frame{
+  aspect-ratio:1/1;border-radius:14px;background:rgba(250,249,247,.04);
+  border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+  overflow:hidden;transition:transform .4s cubic-bezier(.2,.85,.3,1),border-color .3s,background .3s;
 }
-.grid-item:hover .frame img{transform:scale(1.06);}
-.grid-item .g-name{font-size:13.5px;font-weight:500;margin:12px 0 2px;color:var(--parchment);}
-.grid-item .g-meta{font-size:11.5px;color:var(--text-faint);margin:0;}
+.ig-cell:hover .ig-frame{transform:translateY(-4px);border-color:var(--line-strong);background:rgba(250,249,247,.07);}
+.ig-frame img{max-width:74%;max-height:74%;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(0,0,0,.45));pointer-events:none;}
+.ig-name{font-size:12.5px;color:var(--text-dim);margin:9px 2px 0;text-align:center;pointer-events:none;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ig-hint{text-align:center;font-size:11.5px;color:var(--text-faint);margin:12px 0 0;letter-spacing:.04em;}
 
-#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:40px 0;}
-footer{text-align:center;margin-top:90px;}
-footer img{width:100px;margin:0 auto;opacity:0.5;}
-
-/* takeover */
-#takeover{
-  position:fixed;inset:0;background:rgba(10,8,6,0.9);backdrop-filter:blur(22px);
-  display:none;align-items:center;justify-content:center;z-index:60;padding:40px 24px;
-  opacity:0;transition:opacity .35s ease;
-}
-#takeover.open{opacity:1;}
-.takeover-inner{display:flex;gap:56px;max-width:900px;width:100%;align-items:center;}
-@media(max-width:760px){.takeover-inner{flex-direction:column;gap:26px;text-align:center;}}
-.takeover-img{flex:1 1 46%;display:flex;align-items:center;justify-content:center;}
-.takeover-img img{max-width:100%;max-height:58vh;object-fit:contain;filter:drop-shadow(0 30px 50px rgba(0,0,0,0.6));}
-.takeover-info{flex:1 1 46%;}
-.takeover-info h2{font-weight:600;font-size:clamp(28px,4vw,42px);margin:0 0 14px;letter-spacing:-0.01em;}
-.takeover-info p.desc{font-size:15px;line-height:1.65;color:var(--text-dim);margin:0 0 20px;max-width:420px;}
-@media(max-width:760px){.takeover-info p.desc{margin-left:auto;margin-right:auto;}}
-.takeover-tags{display:flex;gap:8px;flex-wrap:wrap;}
-@media(max-width:760px){.takeover-tags{justify-content:center;}}
-.tk-tag{font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:6px 13px;border-radius:999px;border:1px solid var(--line);color:var(--text-dim);}
-#closeBtn{
-  position:absolute;top:26px;right:28px;width:40px;height:40px;border-radius:50%;
-  border:1px solid var(--line-strong);color:var(--parchment);font-size:18px;
-  display:flex;align-items:center;justify-content:center;z-index:61;
-}
-#closeBtn:hover{background:rgba(250,249,247,0.08);}
+#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:50px 0;}
+footer{text-align:center;margin-top:70px;}
+footer img{width:96px;margin:0 auto;opacity:.5;}
 </style>
 </head>
 <body>
 
-<div class="top-nav"><a href="admin/">Admin ↗</a></div>
+<div class="top-nav"><a href="admin/">Admin &#8599;</a></div>
 
-<div class="page-wrap">
+<div class="shell">
   <div class="hero">
     <img src="assets/logos/bu-mark-light.svg" alt="Beverage Union">
     <p class="eyebrow">Atlas</p>
@@ -103,58 +82,39 @@ footer img{width:100px;margin:0 auto;opacity:0.5;}
   </div>
 
   <div id="catSection" style="display:none;">
-    <div class="section-head">
-      <h2>Menus</h2>
-      <p>Curated selections, ready to share.</p>
-    </div>
+    <div class="section-head"><h2>Menus</h2><p>Curated selections, ready to share.</p></div>
     <hr class="rule">
     <div class="cat-scroll" id="catScroll"></div>
   </div>
 
   <div id="gridSection" style="display:none;">
-    <div class="section-head">
-      <h2>Everything we offer</h2>
-      <p id="gridCount"></p>
-    </div>
+    <div class="section-head"><h2>Everything we offer</h2><p id="gridCount"></p></div>
     <hr class="rule">
-    <div class="drink-grid" id="drinkGrid"></div>
+    <div class="ig-viewport" id="igViewport"></div>
+    <p class="ig-hint">Drag in any direction &#183; tap a drink to open it</p>
   </div>
 
-  <div id="stateMsg">Loading…</div>
+  <div id="stateMsg">Loading&#8230;</div>
 
   <footer><img src="assets/logos/bu-wordmark-light.svg" alt="Beverage Union"></footer>
 </div>
 
-<div id="takeover">
-  <button id="closeBtn" aria-label="Close">✕</button>
-  <div class="takeover-inner">
-    <div class="takeover-img"><img id="tkImg" alt=""></div>
-    <div class="takeover-info">
-      <p class="eyebrow" id="tkType"></p>
-      <h2 id="tkName"></h2>
-      <p class="desc" id="tkDesc"></p>
-      <div class="takeover-tags" id="tkTags"></div>
-    </div>
-  </div>
-</div>
-
 <script src="assets/js/supabase-client.js"></script>
-<script src="assets/js/textures.js"></script>
+<script src="assets/js/backgrounds.js"></script>
+<script src="assets/js/infinite-grid.js"></script>
+<script src="assets/js/drink-detail.js"></script>
 <script>
-const textures = [];
-
 async function boot(){
   try{
     const [catRes, drinkRes] = await Promise.all([
-      fetch(SUPABASE_URL + '/rest/v1/catalogues?is_public=eq.true&select=id,name,drink_ids,background_style&order=created_at.desc', { headers: buHeaders() }),
-      fetch(SUPABASE_URL + '/rest/v1/drinks?is_public=eq.true&select=id,name,description,image_url,bean,type,tasting_notes&order=created_at.desc', { headers: buHeaders() })
+      fetch(SUPABASE_URL + '/rest/v1/catalogues?is_public=eq.true&select=id,name,drink_ids,background_style,bg_colors&order=created_at.desc', { headers: buHeaders() }),
+      fetch(SUPABASE_URL + '/rest/v1/drinks?is_public=eq.true&select=id,name,description,image_url,bean,type,category,tasting_notes&order=created_at.desc', { headers: buHeaders() })
     ]);
     if(!catRes.ok) throw new Error('Could not load menus (' + catRes.status + ')');
     if(!drinkRes.ok) throw new Error('Could not load drinks (' + drinkRes.status + ')');
 
     const catalogues = await catRes.json();
     const drinks = await drinkRes.json();
-
     document.getElementById('stateMsg').style.display = 'none';
 
     if(catalogues.length){
@@ -162,78 +122,40 @@ async function boot(){
       const scroll = document.getElementById('catScroll');
       catalogues.forEach(c=>{
         const tile = document.createElement('a');
-        tile.className = 'cat-tile';
+        tile.className = 'cat-tile bu-grain';
         tile.href = 'c/?id=' + c.id;
         const canvas = document.createElement('canvas');
         tile.appendChild(canvas);
-        const overlay = document.createElement('div');
-        overlay.className = 'overlay';
-        overlay.innerHTML = '<p class="t-name"></p><p class="t-count"></p>';
-        overlay.querySelector('.t-name').textContent = c.name;
-        overlay.querySelector('.t-count').textContent = (c.drink_ids||[]).length + ' drinks';
-        tile.appendChild(overlay);
+        const veil = document.createElement('div');
+        veil.className = 'veil';
+        veil.innerHTML = '<p class="t-name"></p><p class="t-count"></p>';
+        veil.querySelector('.t-name').textContent = c.name;
+        veil.querySelector('.t-count').textContent = (c.drink_ids||[]).length + ' drinks';
+        tile.appendChild(veil);
         scroll.appendChild(tile);
-        textures.push(buStartTexture(canvas, c.background_style || 'ember', { dotGap:6 }));
+        buStartBackground(canvas, c.background_style || 'aurora', c.bg_colors);
       });
     }
 
     if(drinks.length){
       document.getElementById('gridSection').style.display = 'block';
       document.getElementById('gridCount').textContent = drinks.length + (drinks.length===1?' drink':' drinks');
-      const grid = document.getElementById('drinkGrid');
-      drinks.forEach(d=>{
-        const item = document.createElement('div');
-        item.className = 'grid-item';
-        const frame = document.createElement('div');
-        frame.className = 'frame';
-        const img = document.createElement('img');
-        img.src = d.image_url; img.alt = d.name; img.loading = 'lazy';
-        frame.appendChild(img);
-        const nameEl = document.createElement('p');
-        nameEl.className = 'g-name'; nameEl.textContent = d.name;
-        const metaEl = document.createElement('p');
-        metaEl.className = 'g-meta'; metaEl.textContent = d.type;
-        item.appendChild(frame); item.appendChild(nameEl); item.appendChild(metaEl);
-        item.addEventListener('click', ()=> openTakeover(d));
-        grid.appendChild(item);
+      buInfiniteGrid({
+        viewport: document.getElementById('igViewport'),
+        items: drinks,
+        onOpen: buOpenDrink
       });
     }
 
     if(!catalogues.length && !drinks.length){
-      document.getElementById('stateMsg').style.display = 'block';
-      document.getElementById('stateMsg').textContent = 'Nothing published yet — turn on "On home" for a drink or menu in the admin panel.';
+      const m = document.getElementById('stateMsg');
+      m.style.display = 'block';
+      m.textContent = 'Nothing published yet \u2014 turn on "On home" for a drink or menu in the admin panel.';
     }
   } catch(err){
     document.getElementById('stateMsg').textContent = err.message || 'Could not load Atlas.';
   }
 }
-
-function openTakeover(d){
-  document.getElementById('tkImg').src = d.image_url;
-  document.getElementById('tkName').textContent = d.name;
-  document.getElementById('tkDesc').textContent = d.description;
-  document.getElementById('tkType').textContent = d.bean + ' · ' + d.type;
-  const tagsEl = document.getElementById('tkTags');
-  tagsEl.innerHTML = '';
-  (d.tasting_notes||[]).forEach(t=>{
-    const tag = document.createElement('span'); tag.className='tk-tag'; tag.textContent = t;
-    tagsEl.appendChild(tag);
-  });
-  const tk = document.getElementById('takeover');
-  tk.style.display = 'flex';
-  requestAnimationFrame(()=> tk.classList.add('open'));
-  document.body.style.overflow = 'hidden';
-}
-function closeTakeover(){
-  const tk = document.getElementById('takeover');
-  tk.classList.remove('open');
-  setTimeout(()=>{ if(!tk.classList.contains('open')) tk.style.display='none'; }, 360);
-  document.body.style.overflow = '';
-}
-document.getElementById('closeBtn').addEventListener('click', closeTakeover);
-document.getElementById('takeover').addEventListener('click', e=>{ if(e.target.id === 'takeover') closeTakeover(); });
-document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeTakeover(); });
-
 boot();
 </script>
 </body>

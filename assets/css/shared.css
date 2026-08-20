@@ -1,0 +1,64 @@
+/* grain overlay — sits on top of mesh gradients */
+.bu-grain::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+  opacity:.16;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.bu-bg-canvas{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+  filter:blur(0px);
+  image-rendering:auto;
+}
+
+/* ---------- drink detail overlay ---------- */
+#buDetail{
+  position:fixed;inset:0;z-index:200;display:none;
+  background:rgba(8,7,6,.82);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+  opacity:0;transition:opacity .34s ease;
+  overflow-y:auto;
+}
+#buDetail.open{opacity:1;}
+.bu-detail-close{
+  position:fixed;top:20px;right:20px;width:42px;height:42px;border-radius:50%;
+  border:1px solid var(--line-strong);color:var(--parchment);font-size:17px;
+  display:flex;align-items:center;justify-content:center;z-index:210;
+  background:rgba(0,0,0,.3);backdrop-filter:blur(6px);
+}
+.bu-detail-close:hover{background:rgba(250,249,247,.1);}
+.bu-detail-inner{
+  min-height:100%;display:flex;align-items:center;justify-content:center;
+  gap:clamp(24px,5vw,64px);padding:clamp(64px,8vh,90px) clamp(20px,5vw,48px);
+  max-width:1040px;margin:0 auto;
+}
+.bu-detail-media{flex:1 1 44%;display:flex;align-items:center;justify-content:center;}
+.bu-detail-media img{
+  max-width:100%;max-height:56vh;object-fit:contain;
+  filter:drop-shadow(0 34px 54px rgba(0,0,0,.6));
+  animation:buRise .6s cubic-bezier(.2,.9,.3,1) both;
+}
+.bu-detail-body{flex:1 1 50%;animation:buRise .6s .07s cubic-bezier(.2,.9,.3,1) both;}
+.bu-detail-body .kicker{
+  font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--steel);margin:0 0 12px;
+}
+.bu-detail-body h2{
+  font-weight:600;font-size:clamp(28px,5vw,46px);line-height:1.02;
+  letter-spacing:-.02em;margin:0 0 16px;
+}
+.bu-detail-body .desc{
+  font-size:clamp(14px,1.6vw,16px);line-height:1.65;color:var(--text-dim);
+  margin:0 0 22px;max-width:440px;
+}
+.bu-detail-tags{display:flex;gap:8px;flex-wrap:wrap;}
+.bu-tag{
+  font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+  padding:6px 13px;border-radius:999px;border:1px solid var(--line);color:var(--text-dim);
+}
+@keyframes buRise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+
+@media(max-width:780px){
+  .bu-detail-inner{flex-direction:column;text-align:center;gap:26px;padding-top:76px;}
+  .bu-detail-media img{max-height:38vh;}
+  .bu-detail-body .desc{margin-left:auto;margin-right:auto;}
+  .bu-detail-tags{justify-content:center;}
+}
