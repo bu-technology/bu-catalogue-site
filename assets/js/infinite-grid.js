@@ -1,10 +1,10 @@
 /* ---------------------------------------------------------------
-   Infinite 2D draggable grid.
+   Infinite 2D draggable grid of drink images.
 
-   Only the cells visible in the viewport are rendered as DOM nodes;
-   as you drag, cells that scroll out are recycled. The item shown in
-   any cell is chosen by (col,row) modulo the item list, so the plane
-   repeats forever in both axes.
+   Note: pointer capture is deliberately NOT used here. Capturing the
+   pointer on the viewport retargets click events to the viewport,
+   which stops clicks reaching the individual cells. Instead the drag
+   is tracked on window and a tap is detected by distance travelled.
    --------------------------------------------------------------- */
 function buInfiniteGrid(opts){
   const viewport = opts.viewport;
@@ -16,70 +16,64 @@ function buInfiniteGrid(opts){
   layer.className = 'ig-layer';
   viewport.appendChild(layer);
 
-  let cellW = 0, cellH = 0, gap = 0;
+  let cell = 0, gap = 0, cellW = 0, cellH = 0;
   function measure(){
     const w = viewport.clientWidth;
-    const size = w < 560 ? 132 : (w < 900 ? 158 : 186);
-    gap   = w < 560 ? 14 : 22;
-    cellW = size + gap;
-    cellH = size + gap + 34; // room for the label
+    cell = w < 480 ? 128 : (w < 820 ? 168 : 210);
+    gap  = w < 480 ? 18 : 30;
+    cellW = cell + gap;
+    cellH = cell + gap;
   }
   measure();
 
-  let ox = 0, oy = 0;                 // world offset in px
-  let vx = 0, vy = 0;                 // velocity px/ms
+  let ox = 0, oy = 0, vx = 0, vy = 0;
   let dragging = false, moved = false;
-  let lastX = 0, lastY = 0, lastT = 0;
-  const FRICTION = 0.93;
+  let startX = 0, startY = 0, lastX = 0, lastY = 0, lastT = 0;
+  const FRICTION = 0.935;
 
-  const pool = new Map();             // "col,row" -> element
+  const pool = new Map();
 
   function itemFor(col, row){
-    // 2D hash into the item list so neighbours differ
     let i = (col * 31 + row * 17) % items.length;
     if(i < 0) i += items.length;
     return items[i];
   }
 
-  function build(cellKey, col, row){
+  function build(key, col, row){
     const d = itemFor(col, row);
     const node = document.createElement('div');
     node.className = 'ig-cell';
-    node.style.width = (cellW - gap) + 'px';
-    node.innerHTML =
-      '<div class="ig-frame"><img loading="lazy" draggable="false"></div>' +
-      '<p class="ig-name"></p>';
-    const img = node.querySelector('img');
+    node.style.width  = cell + 'px';
+    node.style.height = cell + 'px';
+    const img = document.createElement('img');
     img.src = d.image_url; img.alt = d.name;
-    node.querySelector('.ig-name').textContent = d.name;
+    img.loading = 'lazy'; img.draggable = false;
+    node.appendChild(img);
     node.addEventListener('click', ()=>{ if(!moved) onOpen(d); });
     layer.appendChild(node);
-    pool.set(cellKey, node);
+    pool.set(key, node);
     return node;
   }
 
   function render(){
     const vw = viewport.clientWidth, vh = viewport.clientHeight;
-    const startCol = Math.floor(-ox / cellW) - 1;
-    const endCol   = Math.floor((-ox + vw) / cellW) + 1;
-    const startRow = Math.floor(-oy / cellH) - 1;
-    const endRow   = Math.floor((-oy + vh) / cellH) + 1;
+    const c0 = Math.floor(-ox / cellW) - 1, c1 = Math.floor((-ox + vw) / cellW) + 1;
+    const r0 = Math.floor(-oy / cellH) - 1, r1 = Math.floor((-oy + vh) / cellH) + 1;
 
-    const needed = new Set();
-    for(let row=startRow; row<=endRow; row++){
-      for(let col=startCol; col<=endCol; col++){
+    const need = new Set();
+    for(let row=r0; row<=r1; row++){
+      for(let col=c0; col<=c1; col++){
         const key = col + ',' + row;
-        needed.add(key);
-        let node = pool.get(key);
-        if(!node) node = build(key, col, row);
-        const x = col*cellW + ox;
+        need.add(key);
+        let node = pool.get(key) || build(key, col, row);
+        // offset alternate rows for a looser, less gridded feel
+        const stagger = (((row % 2) + 2) % 2) * (cellW * 0.5);
+        const x = col*cellW + ox + stagger;
         const y = row*cellH + oy;
         node.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
       }
     }
-    pool.forEach((node, key)=>{
-      if(!needed.has(key)){ node.remove(); pool.delete(key); }
-    });
+    pool.forEach((node, key)=>{ if(!need.has(key)){ node.remove(); pool.delete(key); } });
   }
 
   let raf = null, prevT = null;
@@ -87,7 +81,6 @@ function buInfiniteGrid(opts){
     if(prevT === null) prevT = t;
     let dt = t - prevT; prevT = t;
     if(dt > 60) dt = 60;
-
     if(!dragging && (Math.abs(vx) > 0.002 || Math.abs(vy) > 0.002)){
       ox += vx*dt; oy += vy*dt;
       const decay = Math.pow(FRICTION, dt/16.67);
@@ -98,17 +91,17 @@ function buInfiniteGrid(opts){
   }
   raf = requestAnimationFrame(tick);
 
-  viewport.addEventListener('pointerdown', e=>{
+  function onDown(e){
     dragging = true; moved = false;
-    lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+    startX = lastX = e.clientX; startY = lastY = e.clientY;
+    lastT = performance.now();
     vx = vy = 0;
-    viewport.setPointerCapture(e.pointerId);
     viewport.classList.add('grabbing');
-  });
-  viewport.addEventListener('pointermove', e=>{
+  }
+  function onMove(e){
     if(!dragging) return;
     const dx = e.clientX - lastX, dy = e.clientY - lastY;
-    if(Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+    if(Math.abs(e.clientX - startX) > 4 || Math.abs(e.clientY - startY) > 4) moved = true;
     ox += dx; oy += dy;
     const now = performance.now(), dt = now - lastT;
     if(dt > 0){
@@ -117,8 +110,8 @@ function buInfiniteGrid(opts){
     }
     lastX = e.clientX; lastY = e.clientY; lastT = now;
     render();
-  });
-  function release(){
+  }
+  function onUp(){
     if(!dragging) return;
     dragging = false;
     viewport.classList.remove('grabbing');
@@ -126,10 +119,14 @@ function buInfiniteGrid(opts){
     const cap = 3.2;
     vx = Math.max(-cap, Math.min(cap, vx));
     vy = Math.max(-cap, Math.min(cap, vy));
-    setTimeout(()=>{ moved = false; }, 40);
+    // let the click event fire first, then clear the flag
+    setTimeout(()=>{ moved = false; }, 0);
   }
-  viewport.addEventListener('pointerup', release);
-  viewport.addEventListener('pointercancel', release);
+
+  viewport.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
 
   viewport.addEventListener('wheel', e=>{
     e.preventDefault();
@@ -138,12 +135,24 @@ function buInfiniteGrid(opts){
     render();
   }, { passive:false });
 
+  let rt = null;
   window.addEventListener('resize', ()=>{
-    measure();
-    pool.forEach(n=>n.remove()); pool.clear();
-    render();
+    clearTimeout(rt);
+    rt = setTimeout(()=>{
+      measure();
+      pool.forEach(n=>n.remove()); pool.clear();
+      render();
+    }, 140);
   });
 
   render();
-  return { destroy(){ if(raf) cancelAnimationFrame(raf); layer.remove(); } };
+  return {
+    destroy(){
+      if(raf) cancelAnimationFrame(raf);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      layer.remove();
+    }
+  };
 }

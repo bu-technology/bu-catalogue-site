@@ -125,14 +125,14 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
 
 /* background picker */
 .bg-styles{display:flex;gap:10px;flex-wrap:wrap;}
-.bg-opt{width:96px;cursor:pointer;}
-.bg-opt canvas{width:96px;height:62px;border-radius:9px;border:2px solid transparent;display:block;object-fit:cover;}
+.bg-opt{width:112px;cursor:pointer;}
+.bg-opt canvas{width:112px;height:74px;border-radius:9px;border:2px solid transparent;display:block;object-fit:cover;}
 .bg-opt.active canvas{border-color:var(--steel);}
 .bg-opt p{font-size:11px;color:var(--text-dim);margin:5px 0 0;text-align:center;}
 .palette-row{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px;}
 .pal-opt{cursor:pointer;border:2px solid transparent;border-radius:8px;padding:3px;}
 .pal-opt.active{border-color:var(--steel);}
-.pal-swatch{display:flex;width:62px;height:26px;border-radius:5px;overflow:hidden;}
+.pal-swatch{display:flex;width:72px;height:26px;border-radius:5px;overflow:hidden;}
 .pal-swatch span{flex:1;}
 .pal-opt p{font-size:10px;color:var(--text-faint);margin:4px 0 0;text-align:center;}
 .custom-colors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
@@ -221,13 +221,7 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
         </div>
         <div class="field">
           <label>Type</label>
-          <div class="chip-row" id="typeSelect">
-            <button type="button" class="chip" data-type="Cold Brew">Cold Brew</button>
-            <button type="button" class="chip" data-type="Espresso">Espresso</button>
-            <button type="button" class="chip" data-type="Matcha">Matcha</button>
-            <button type="button" class="chip" data-type="Iced">Iced</button>
-            <button type="button" class="chip" data-type="Dessert">Dessert</button>
-          </div>
+          <div class="chip-row" id="typeSelect"></div>
         </div>
         <div class="field">
           <label>Category</label>
@@ -271,7 +265,8 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
           <div class="custom-colors">
             <label>Light 1 <input type="color" id="col1"></label>
             <label>Light 2 <input type="color" id="col2"></label>
-            <label>Base <input type="color" id="col3"></label>
+            <label>Mid <input type="color" id="col3"></label>
+            <label>Base <input type="color" id="col4"></label>
           </div>
         </div>
 
@@ -309,10 +304,22 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
 
     <!-- CATEGORIES -->
     <section class="pane" id="pane-cats">
-      <div class="pane-header"><h1>Categories</h1></div>
-      <p style="color:var(--text-dim);font-size:13.5px;margin:0 0 20px;max-width:520px;line-height:1.6;">
-        Categories group drinks into rows inside a menu. Add whatever fits how you present &#8212; Hot, Cold, Coffee, Cold Brew, or anything else.
+      <div class="pane-header"><h1>Types &amp; categories</h1></div>
+
+      <p style="color:var(--text-dim);font-size:13.5px;margin:0 0 26px;max-width:540px;line-height:1.6;">
+        <strong style="color:var(--parchment);font-weight:600;">Types</strong> describe what a drink is (Cold Brew, Espresso&#8230;).
+        <strong style="color:var(--parchment);font-weight:600;">Categories</strong> group drinks into rows inside a menu (Hot, Cold&#8230;).
+        Edit either list freely &#8212; renaming updates every drink using it.
       </p>
+
+      <h2 style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:0 0 12px;">Types</h2>
+      <div class="inline-form">
+        <input type="text" id="newTypeName" placeholder="New type name">
+        <button class="btn-primary" id="addTypeBtn">Add</button>
+      </div>
+      <div id="typeManageList" style="margin-bottom:34px;"></div>
+
+      <h2 style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);margin:0 0 12px;">Categories</h2>
       <div class="inline-form">
         <input type="text" id="newCatName" placeholder="New category name">
         <button class="btn-primary" id="addCatBtn">Add</button>
@@ -362,57 +369,122 @@ function switchTab(tab){
   document.querySelectorAll('.pane').forEach(p=> p.classList.toggle('active', p.id==='pane-'+tab));
 }
 
-/* ---------- categories ---------- */
+/* ---------- types & categories ---------- */
+let allTypes = [];
+
 async function loadCategories(){
   try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name,sort_order&order=sort_order.asc', { headers: apiHeaders() });
-    allCats = res.ok ? await res.json() : [];
-  } catch(e){ allCats = []; }
-  renderCatManage(); renderDrinkCatChips();
+    const res = await fetch(SUPABASE_URL + '/rest/v1/categories?select=id,name,kind,sort_order&order=sort_order.asc', { headers: apiHeaders() });
+    const rows = res.ok ? await res.json() : [];
+    allCats  = rows.filter(r=> (r.kind||'category') === 'category');
+    allTypes = rows.filter(r=> r.kind === 'type');
+  } catch(e){ allCats = []; allTypes = []; }
+  renderTaxonomyLists();
+  renderDrinkTypeChips();
+  renderDrinkCatChips();
 }
-function renderCatManage(){
-  const list = document.getElementById('catManageList');
-  list.innerHTML = '';
-  if(allCats.length===0){ list.innerHTML = '<p style="color:var(--text-faint);font-size:13px;">No categories yet.</p>'; return; }
-  allCats.forEach(c=>{
-    const row = document.createElement('div');
-    row.className='cat-manage-row';
-    row.innerHTML = '<p></p><button class="icon-btn">Delete</button>';
-    row.querySelector('p').textContent = c.name;
-    row.querySelector('button').addEventListener('click', ()=> deleteCategory(c.id, c.name));
-    list.appendChild(row);
-  });
+
+function taxonomyRow(item, kind){
+  const row = document.createElement('div');
+  row.className = 'cat-manage-row';
+  row.innerHTML = '<p></p><div style="display:flex;gap:10px;"><button class="icon-btn ren">Rename</button><button class="icon-btn del">Delete</button></div>';
+  row.querySelector('p').textContent = item.name;
+  row.querySelector('.ren').addEventListener('click', ()=> renameTaxonomy(item, kind));
+  row.querySelector('.del').addEventListener('click', ()=> deleteTaxonomy(item, kind));
+  return row;
 }
-document.getElementById('addCatBtn').addEventListener('click', async ()=>{
-  const input = document.getElementById('newCatName');
+function renderTaxonomyLists(){
+  const catList = document.getElementById('catManageList');
+  const typeList = document.getElementById('typeManageList');
+  catList.innerHTML=''; typeList.innerHTML='';
+  if(!allCats.length) catList.innerHTML = '<p style="color:var(--text-faint);font-size:13px;">No categories yet.</p>';
+  if(!allTypes.length) typeList.innerHTML = '<p style="color:var(--text-faint);font-size:13px;">No types yet.</p>';
+  allCats.forEach(c=> catList.appendChild(taxonomyRow(c,'category')));
+  allTypes.forEach(t=> typeList.appendChild(taxonomyRow(t,'type')));
+}
+
+async function addTaxonomy(kind, inputId){
+  const input = document.getElementById(inputId);
   const name = input.value.trim();
   const msg = document.getElementById('catManageMsg');
-  msg.textContent=''; msg.style.color='var(--orange)';
-  if(!name){ msg.textContent='Give the category a name.'; return; }
+  msg.style.color='var(--orange)'; msg.textContent='';
+  if(!name){ msg.textContent='Give it a name.'; return; }
+  const existing = kind==='type' ? allTypes : allCats;
   try{
     const res = await fetch(SUPABASE_URL + '/rest/v1/categories', {
       method:'POST', headers: apiHeaders({'Content-Type':'application/json'}),
-      body: JSON.stringify({ name, sort_order: allCats.length + 1 })
+      body: JSON.stringify({ name, kind, sort_order: existing.length + 1 })
     });
-    if(!res.ok) throw new Error(res.status===409 ? 'That category already exists.' : 'Could not add category.');
+    if(!res.ok) throw new Error(res.status===409 ? 'That already exists.' : 'Could not add it.');
     input.value='';
     await loadCategories();
   } catch(err){ msg.textContent = friendlyError(err); }
-});
-async function deleteCategory(id, name){
-  if(!confirm('Delete category "' + name + '"? Drinks keep their data but lose this grouping.')) return;
+}
+document.getElementById('addCatBtn').addEventListener('click', ()=> addTaxonomy('category','newCatName'));
+document.getElementById('addTypeBtn').addEventListener('click', ()=> addTaxonomy('type','newTypeName'));
+
+async function renameTaxonomy(item, kind){
+  const next = prompt('Rename "' + item.name + '" to:', item.name);
+  if(next === null) return;
+  const name = next.trim();
+  if(!name || name === item.name) return;
   try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/categories?id=eq.' + id, { method:'DELETE', headers: apiHeaders() });
+    const res = await fetch(SUPABASE_URL + '/rest/v1/categories?id=eq.' + item.id, {
+      method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}), body: JSON.stringify({ name })
+    });
+    if(!res.ok) throw new Error('Rename failed.');
+    // keep existing drinks pointing at the new name
+    const col = kind === 'type' ? 'type' : 'category';
+    await fetch(SUPABASE_URL + '/rest/v1/drinks?' + col + '=eq.' + encodeURIComponent(item.name), {
+      method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}),
+      body: JSON.stringify({ [col]: name })
+    });
+    if(kind === 'category'){
+      // and any menus that list it
+      const affected = allCatalogues.filter(c => (c.categories||[]).includes(item.name));
+      for(const c of affected){
+        const updated = (c.categories||[]).map(x => x === item.name ? name : x);
+        await fetch(SUPABASE_URL + '/rest/v1/catalogues?id=eq.' + c.id, {
+          method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}),
+          body: JSON.stringify({ categories: updated })
+        });
+      }
+    }
+    await loadCategories(); await loadDrinks(); await loadCatalogues();
+  } catch(err){ alert(friendlyError(err)); }
+}
+
+async function deleteTaxonomy(item, kind){
+  const label = kind === 'type' ? 'type' : 'category';
+  if(!confirm('Delete ' + label + ' "' + item.name + '"? Drinks keep their data but lose this grouping.')) return;
+  try{
+    const res = await fetch(SUPABASE_URL + '/rest/v1/categories?id=eq.' + item.id, { method:'DELETE', headers: apiHeaders() });
     if(!res.ok) throw new Error('Delete failed.');
     await loadCategories();
   } catch(err){ alert(friendlyError(err)); }
 }
+
+function renderDrinkTypeChips(){
+  const row = document.getElementById('typeSelect');
+  row.innerHTML='';
+  if(!allTypes.length){ row.innerHTML='<p style="font-size:12px;color:var(--text-faint);margin:0;">Add types in the Types &amp; categories tab.</p>'; return; }
+  allTypes.forEach(t=>{
+    const b = document.createElement('button');
+    b.type='button'; b.className='chip'; b.textContent=t.name;
+    b.addEventListener('click', ()=>{
+      row.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); selectedType = t.name;
+    });
+    row.appendChild(b);
+  });
+}
 function renderDrinkCatChips(){
   const row = document.getElementById('catSelect');
   row.innerHTML='';
+  if(!allCats.length){ row.innerHTML='<p style="font-size:12px;color:var(--text-faint);margin:0;">Add categories in the Types &amp; categories tab.</p>'; return; }
   allCats.forEach(c=>{
     const b = document.createElement('button');
-    b.type='button'; b.className='chip'; b.dataset.cat=c.name; b.textContent=c.name;
+    b.type='button'; b.className='chip'; b.textContent=c.name;
     b.addEventListener('click', ()=>{
       row.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
       b.classList.add('active'); selectedCategory = c.name;
@@ -486,12 +558,6 @@ document.querySelectorAll('#beanSelect .seg-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('#beanSelect .seg-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active'); selectedBean = btn.dataset.bean;
-  });
-});
-document.querySelectorAll('#typeSelect .chip').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('#typeSelect .chip').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active'); selectedType = btn.dataset.type;
   });
 });
 const tagWrap = document.getElementById('tagWrap'), tagText = document.getElementById('tagText');
@@ -622,7 +688,7 @@ async function deleteCatalogue(id, name){
 
 /* ---------- builder ---------- */
 let pickedIds = new Set(), pickerFilter='All', pickerSearch='';
-let bgStyle='aurora', bgColors=['#CC5500','#F0A24B','#2A1006'];
+let bgStyle='flow', bgColors=BU_PALETTES[0].colors.slice();
 let menuCats = new Set();
 let editingId = null;
 let bgPreviews = [];
@@ -632,20 +698,26 @@ function renderPalettes(){
   BU_PALETTES.forEach(p=>{
     const opt = document.createElement('div');
     opt.className = 'pal-opt' + (JSON.stringify(p.colors)===JSON.stringify(bgColors) ? ' active' : '');
-    opt.innerHTML = '<div class="pal-swatch"><span style="background:'+p.colors[0]+'"></span><span style="background:'+p.colors[1]+'"></span><span style="background:'+p.colors[2]+'"></span></div><p></p>';
+    opt.innerHTML = '<div class="pal-swatch">' + p.colors.map(c=>'<span style="background:'+c+'"></span>').join('') + '</div><p></p>';
     opt.querySelector('p').textContent = p.label;
-    opt.addEventListener('click', ()=>{ bgColors = p.colors.slice(); syncColorInputs(); renderPalettes(); renderBgStyles(); });
+    opt.addEventListener('click', ()=>{
+      bgColors = p.colors.slice();
+      syncColorInputs(); renderPalettes();
+      bgPreviews.forEach(pv=> pv.setColors(bgColors));
+    });
     row.appendChild(opt);
   });
 }
 function syncColorInputs(){
-  document.getElementById('col1').value = bgColors[0];
-  document.getElementById('col2').value = bgColors[1];
-  document.getElementById('col3').value = bgColors[2];
+  ['col1','col2','col3','col4'].forEach((id,i)=>{
+    const el = document.getElementById(id);
+    if(el && bgColors[i]) el.value = bgColors[i];
+  });
 }
-['col1','col2','col3'].forEach((id,i)=>{
+['col1','col2','col3','col4'].forEach((id,i)=>{
   document.getElementById(id).addEventListener('input', e=>{
-    bgColors[i] = e.target.value; renderPalettes(); renderBgStyles();
+    bgColors[i] = e.target.value; renderPalettes();
+    bgPreviews.forEach(pv=> pv.setColors(bgColors));
   });
 });
 function renderBgStyles(){
@@ -660,7 +732,7 @@ function renderBgStyles(){
     opt.appendChild(p);
     opt.addEventListener('click', ()=>{ bgStyle = key; renderBgStyles(); });
     row.appendChild(opt);
-    bgPreviews.push(buStartBackground(cv, key, bgColors));
+    bgPreviews.push(buStartBackground(cv, key, bgColors, { quality:0.45 }));
   });
 }
 function renderMenuCats(){
@@ -734,8 +806,9 @@ function openBuilder(existing){
   document.getElementById('catName').value = existing ? existing.name : '';
   document.getElementById('catDescInput').value = existing && existing.description ? existing.description : '';
   document.getElementById('catPublic').checked = existing ? !!existing.is_public : false;
-  bgStyle = (existing && existing.background_style) || 'aurora';
+  bgStyle = (existing && BU_BG_STYLES[existing.background_style]) ? existing.background_style : 'flow';
   bgColors = (existing && existing.bg_colors && existing.bg_colors.length>=3) ? existing.bg_colors.slice() : BU_PALETTES[0].colors.slice();
+  while(bgColors.length < 4) bgColors.push(bgColors[bgColors.length-1]);
   menuCats = new Set((existing && existing.categories) || []);
   pickedIds = new Set((existing && existing.drink_ids) || []);
   pickerFilter='All'; pickerSearch=''; document.getElementById('pickerSearch').value='';

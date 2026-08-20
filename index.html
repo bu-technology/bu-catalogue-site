@@ -44,26 +44,25 @@ body{overflow-x:hidden;}
 .cat-tile .t-name{font-size:16px;font-weight:600;margin:0 0 3px;color:#fff;}
 .cat-tile .t-count{font-size:11.5px;color:rgba(255,255,255,.8);margin:0;}
 
-/* infinite grid */
-.ig-viewport{
-  position:relative;height:clamp(400px,62vh,660px);overflow:hidden;cursor:grab;
+/* infinite grid — full bleed, images only */
+.ig-band{
+  position:relative;width:100vw;left:50%;transform:translateX(-50%);
+  height:clamp(420px,72vh,780px);overflow:hidden;cursor:grab;
   touch-action:none;user-select:none;
-  border:1px solid var(--line);border-radius:18px;background:rgba(250,249,247,.02);
 }
-.ig-viewport.grabbing{cursor:grabbing;}
+.ig-band.grabbing{cursor:grabbing;}
 .ig-layer{position:absolute;inset:0;}
-.ig-cell{position:absolute;top:0;left:0;will-change:transform;cursor:pointer;}
-.ig-frame{
-  aspect-ratio:1/1;border-radius:14px;background:rgba(250,249,247,.04);
-  border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
-  overflow:hidden;transition:transform .4s cubic-bezier(.2,.85,.3,1),border-color .3s,background .3s;
+.ig-cell{
+  position:absolute;top:0;left:0;will-change:transform;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
 }
-.ig-cell:hover .ig-frame{transform:translateY(-4px);border-color:var(--line-strong);background:rgba(250,249,247,.07);}
-.ig-frame img{max-width:74%;max-height:74%;object-fit:contain;filter:drop-shadow(0 12px 18px rgba(0,0,0,.45));pointer-events:none;}
-.ig-name{font-size:12.5px;color:var(--text-dim);margin:9px 2px 0;text-align:center;pointer-events:none;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ig-hint{text-align:center;font-size:11.5px;color:var(--text-faint);margin:12px 0 0;letter-spacing:.04em;}
-
+.ig-cell img{
+  max-width:88%;max-height:88%;object-fit:contain;pointer-events:none;
+  filter:drop-shadow(0 18px 26px rgba(0,0,0,.5));
+  transition:transform .42s cubic-bezier(.2,.85,.3,1);
+}
+.ig-cell:hover img{transform:scale(1.09);}
+.ig-hint{text-align:center;font-size:11.5px;color:var(--text-faint);margin:16px 0 0;letter-spacing:.04em;}
 #stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:50px 0;}
 footer{text-align:center;margin-top:70px;}
 footer img{width:96px;margin:0 auto;opacity:.5;}
@@ -90,7 +89,7 @@ footer img{width:96px;margin:0 auto;opacity:.5;}
   <div id="gridSection" style="display:none;">
     <div class="section-head"><h2>Everything we offer</h2><p id="gridCount"></p></div>
     <hr class="rule">
-    <div class="ig-viewport" id="igViewport"></div>
+    <div class="ig-band" id="igViewport"></div>
     <p class="ig-hint">Drag in any direction &#183; tap a drink to open it</p>
   </div>
 
@@ -133,7 +132,7 @@ async function boot(){
         veil.querySelector('.t-count').textContent = (c.drink_ids||[]).length + ' drinks';
         tile.appendChild(veil);
         scroll.appendChild(tile);
-        buStartBackground(canvas, c.background_style || 'aurora', c.bg_colors);
+        buStartBackground(canvas, c.background_style || 'flow', c.bg_colors);
       });
     }
 

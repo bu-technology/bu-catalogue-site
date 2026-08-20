@@ -115,7 +115,7 @@ async function boot(){
     const host = document.getElementById('bgHost');
     const canvas = document.createElement('canvas');
     host.insertBefore(canvas, host.firstChild);
-    buStartBackground(canvas, catalogue.background_style || 'aurora', catalogue.bg_colors);
+    buStartBackground(canvas, catalogue.background_style || 'flow', catalogue.bg_colors);
 
     stateMsg.style.display = 'none';
     document.getElementById('content').style.display = 'block';
@@ -229,30 +229,34 @@ function startMarquee(wrap, track, list){
   }
   requestAnimationFrame(tick);
 
+  // Pointer capture is deliberately avoided: it retargets click events to
+  // the wrapper and stops taps reaching the individual drinks.
+  let startX = 0;
   wrap.addEventListener('pointerdown', e=>{
     dragging = true; moved = false;
-    lastX = e.clientX; lastT = performance.now(); vel = 0;
+    startX = lastX = e.clientX; lastT = performance.now(); vel = 0;
     target = pos;
-    wrap.setPointerCapture(e.pointerId); wrap.classList.add('grabbing');
+    wrap.classList.add('grabbing');
   });
-  wrap.addEventListener('pointermove', e=>{
+  function onMove(e){
     if(!dragging) return;
     const dx = e.clientX - lastX;
-    if(Math.abs(dx) > 3) moved = true;
+    if(Math.abs(e.clientX - startX) > 4) moved = true;
     target -= dx;
     const now = performance.now(), dt = now - lastT;
     if(dt > 0) vel = vel*0.7 + (-dx/dt)*0.3;
     lastX = e.clientX; lastT = now;
-  });
+  }
   function release(){
     if(!dragging) return;
     dragging = false; wrap.classList.remove('grabbing');
     if(performance.now() - lastT > 90) vel = 0;
     vel = Math.max(-2.6, Math.min(2.6, vel));
-    setTimeout(()=>{ moved = false; }, 40);
+    setTimeout(()=>{ moved = false; }, 0);
   }
-  wrap.addEventListener('pointerup', release);
-  wrap.addEventListener('pointercancel', release);
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', release);
+  window.addEventListener('pointercancel', release);
 
   let rt = null;
   window.addEventListener('resize', ()=>{
