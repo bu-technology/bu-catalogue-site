@@ -85,6 +85,7 @@ footer img{width:96px;margin:0 auto;opacity:.55;}
   </div>
 </div>
 
+<script src="../assets/vendor/three.min.js"></script>
 <script src="../assets/js/supabase-client.js"></script>
 <script src="../assets/js/backgrounds.js"></script>
 <script src="../assets/js/drink-detail.js"></script>
@@ -115,7 +116,7 @@ async function boot(){
     const host = document.getElementById('bgHost');
     const canvas = document.createElement('canvas');
     host.insertBefore(canvas, host.firstChild);
-    buStartBackground(canvas, catalogue.background_style || 'flow', catalogue.bg_colors);
+    buStartBackground(canvas, catalogue.background_style || 'halo', catalogue.bg_colors);
 
     stateMsg.style.display = 'none';
     document.getElementById('content').style.display = 'block';

@@ -125,16 +125,16 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
 
 /* background picker */
 .bg-styles{display:flex;gap:10px;flex-wrap:wrap;}
-.bg-opt{width:112px;cursor:pointer;}
-.bg-opt canvas{width:112px;height:74px;border-radius:9px;border:2px solid transparent;display:block;object-fit:cover;}
+.bg-opt{width:104px;cursor:pointer;}
+.bg-opt canvas{width:104px;height:68px;border-radius:9px;border:2px solid transparent;display:block;object-fit:cover;}
 .bg-opt.active canvas{border-color:var(--steel);}
 .bg-opt p{font-size:11px;color:var(--text-dim);margin:5px 0 0;text-align:center;}
-.palette-row{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px;}
-.pal-opt{cursor:pointer;border:2px solid transparent;border-radius:8px;padding:3px;}
-.pal-opt.active{border-color:var(--steel);}
-.pal-swatch{display:flex;width:72px;height:26px;border-radius:5px;overflow:hidden;}
-.pal-swatch span{flex:1;}
-.pal-opt p{font-size:10px;color:var(--text-faint);margin:4px 0 0;text-align:center;}
+
+
+
+
+
+
 .custom-colors{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 .custom-colors label{font-size:11px;color:var(--text-faint);display:flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0;margin:0;}
 .custom-colors input[type=color]{width:38px;height:30px;border:1px solid var(--line);border-radius:6px;background:none;padding:2px;cursor:pointer;}
@@ -260,18 +260,17 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
         <div class="field wide"><label for="catDescInput">Description <span style="text-transform:none;font-weight:400;">(optional)</span></label><textarea id="catDescInput" style="min-height:56px;"></textarea></div>
 
         <div class="field wide">
-          <label>Colour scheme</label>
-          <div class="palette-row" id="paletteRow"></div>
+          <label>Colours</label>
           <div class="custom-colors">
-            <label>Light 1 <input type="color" id="col1"></label>
-            <label>Light 2 <input type="color" id="col2"></label>
-            <label>Mid <input type="color" id="col3"></label>
-            <label>Base <input type="color" id="col4"></label>
+            <label>Colour 1 <input type="color" id="col1"></label>
+            <label>Colour 2 <input type="color" id="col2"></label>
+            <label>Colour 3 <input type="color" id="col3"></label>
+            <button type="button" class="btn-ghost" id="resetColorsBtn" style="padding:7px 13px;font-size:11.5px;">Use preset colours</button>
           </div>
         </div>
 
         <div class="field wide">
-          <label>Animation</label>
+          <label>Gradient</label>
           <div class="bg-styles" id="bgStyleRow"></div>
         </div>
 
@@ -330,6 +329,7 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
   </main>
 </div>
 
+<script src="../assets/vendor/three.min.js"></script>
 <script src="../assets/js/backgrounds.js"></script>
 <script>
 const SUPABASE_URL = "https://dmxpltiomvluuooojayh.supabase.co";
@@ -688,56 +688,52 @@ async function deleteCatalogue(id, name){
 
 /* ---------- builder ---------- */
 let pickedIds = new Set(), pickerFilter='All', pickerSearch='';
-let bgStyle='flow', bgColors=BU_PALETTES[0].colors.slice();
+let bgStyle='halo', bgColors=[BU_SHADER_PRESETS.halo.color1, BU_SHADER_PRESETS.halo.color2, BU_SHADER_PRESETS.halo.color3];
 let menuCats = new Set();
 let editingId = null;
 let bgPreviews = [];
 
-function renderPalettes(){
-  const row = document.getElementById('paletteRow'); row.innerHTML='';
-  BU_PALETTES.forEach(p=>{
-    const opt = document.createElement('div');
-    opt.className = 'pal-opt' + (JSON.stringify(p.colors)===JSON.stringify(bgColors) ? ' active' : '');
-    opt.innerHTML = '<div class="pal-swatch">' + p.colors.map(c=>'<span style="background:'+c+'"></span>').join('') + '</div><p></p>';
-    opt.querySelector('p').textContent = p.label;
-    opt.addEventListener('click', ()=>{
-      bgColors = p.colors.slice();
-      syncColorInputs(); renderPalettes();
-      bgPreviews.forEach(pv=> pv.setColors(bgColors));
-    });
-    row.appendChild(opt);
-  });
-}
 function syncColorInputs(){
-  ['col1','col2','col3','col4'].forEach((id,i)=>{
+  ['col1','col2','col3'].forEach((id,i)=>{
     const el = document.getElementById(id);
     if(el && bgColors[i]) el.value = bgColors[i];
   });
 }
-['col1','col2','col3','col4'].forEach((id,i)=>{
+['col1','col2','col3'].forEach((id,i)=>{
   document.getElementById(id).addEventListener('input', e=>{
-    bgColors[i] = e.target.value; renderPalettes();
+    bgColors[i] = e.target.value;
     bgPreviews.forEach(pv=> pv.setColors(bgColors));
   });
 });
+document.getElementById('resetColorsBtn').addEventListener('click', ()=>{
+  const p = BU_SHADER_PRESETS[bgStyle];
+  bgColors = [p.color1, p.color2, p.color3];
+  syncColorInputs();
+  bgPreviews.forEach(pv=> pv.setColors(bgColors));
+});
+
 function renderBgStyles(){
   bgPreviews.forEach(p=>p.stop()); bgPreviews=[];
   const row = document.getElementById('bgStyleRow'); row.innerHTML='';
-  Object.keys(BU_BG_STYLES).forEach(key=>{
+  Object.keys(BU_SHADER_PRESETS).forEach(key=>{
     const opt = document.createElement('div');
     opt.className='bg-opt' + (key===bgStyle ? ' active' : '');
     const cv = document.createElement('canvas');
     opt.appendChild(cv);
-    const p = document.createElement('p'); p.textContent = BU_BG_STYLES[key].label;
+    const p = document.createElement('p');
+    p.textContent = BU_SHADER_PRESETS[key].title;
     opt.appendChild(p);
-    opt.addEventListener('click', ()=>{ bgStyle = key; renderBgStyles(); });
+    opt.addEventListener('click', ()=>{
+      bgStyle = key;
+      renderBgStyles();
+    });
     row.appendChild(opt);
-    bgPreviews.push(buStartBackground(cv, key, bgColors, { quality:0.45 }));
+    bgPreviews.push(buStartBackground(cv, key, bgColors, { quality:0.4 }));
   });
 }
 function renderMenuCats(){
   const row = document.getElementById('menuCatRow'); row.innerHTML='';
-  if(!allCats.length){ row.innerHTML='<p style="font-size:12px;color:var(--text-faint);margin:0;">Add categories in the Categories tab first.</p>'; return; }
+  if(!allCats.length){ row.innerHTML='<p style="font-size:12px;color:var(--text-faint);margin:0;">Add categories in the Types &amp; categories tab first.</p>'; return; }
   allCats.forEach(c=>{
     const b = document.createElement('button');
     b.type='button'; b.className='chip' + (menuCats.has(c.name)?' active':''); b.textContent=c.name;
@@ -806,15 +802,16 @@ function openBuilder(existing){
   document.getElementById('catName').value = existing ? existing.name : '';
   document.getElementById('catDescInput').value = existing && existing.description ? existing.description : '';
   document.getElementById('catPublic').checked = existing ? !!existing.is_public : false;
-  bgStyle = (existing && BU_BG_STYLES[existing.background_style]) ? existing.background_style : 'flow';
-  bgColors = (existing && existing.bg_colors && existing.bg_colors.length>=3) ? existing.bg_colors.slice() : BU_PALETTES[0].colors.slice();
-  while(bgColors.length < 4) bgColors.push(bgColors[bgColors.length-1]);
+  bgStyle = (existing && BU_SHADER_PRESETS[existing.background_style]) ? existing.background_style : 'halo';
+  bgColors = (existing && existing.bg_colors && existing.bg_colors.length>=3)
+    ? existing.bg_colors.slice(0,3)
+    : [BU_SHADER_PRESETS[bgStyle].color1, BU_SHADER_PRESETS[bgStyle].color2, BU_SHADER_PRESETS[bgStyle].color3];
   menuCats = new Set((existing && existing.categories) || []);
   pickedIds = new Set((existing && existing.drink_ids) || []);
   pickerFilter='All'; pickerSearch=''; document.getElementById('pickerSearch').value='';
   document.getElementById('catMsg').textContent='';
 
-  syncColorInputs(); renderPalettes(); renderBgStyles(); renderMenuCats();
+  syncColorInputs(); renderBgStyles(); renderMenuCats();
   populateImportSelect(); renderPickerFilters(); renderPickerGrid();
   document.getElementById('builderPanel').style.display='block';
   document.getElementById('builderPanel').scrollIntoView({ behavior:'smooth', block:'start' });

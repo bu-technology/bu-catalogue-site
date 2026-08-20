@@ -98,6 +98,7 @@ footer img{width:96px;margin:0 auto;opacity:.5;}
   <footer><img src="assets/logos/bu-wordmark-light.svg" alt="Beverage Union"></footer>
 </div>
 
+<script src="assets/vendor/three.min.js"></script>
 <script src="assets/js/supabase-client.js"></script>
 <script src="assets/js/backgrounds.js"></script>
 <script src="assets/js/infinite-grid.js"></script>
@@ -132,7 +133,7 @@ async function boot(){
         veil.querySelector('.t-count').textContent = (c.drink_ids||[]).length + ' drinks';
         tile.appendChild(veil);
         scroll.appendChild(tile);
-        buStartBackground(canvas, c.background_style || 'flow', c.bg_colors);
+        buStartBackground(canvas, c.background_style || 'halo', c.bg_colors, { quality:0.6 });
       });
     }
 
