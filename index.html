@@ -7,65 +7,106 @@
 <link rel="stylesheet" href="assets/css/brand.css">
 <link rel="stylesheet" href="assets/css/shared.css">
 <style>
-body{overflow-x:hidden;}
+body{background:var(--paper);}
 .top-nav{display:flex;justify-content:flex-end;padding:18px 22px 0;max-width:1240px;margin:0 auto;}
-.top-nav a{font-size:12px;color:var(--text-faint);text-decoration:none;letter-spacing:.04em;}
-.top-nav a:hover{color:var(--text-dim);}
+.top-nav a{font-size:12px;color:var(--ink-faint);text-decoration:none;letter-spacing:.05em;}
+.top-nav a:hover{color:var(--ink-soft);}
 
-.shell{max-width:1240px;margin:0 auto;padding:0 clamp(16px,4vw,30px) 90px;}
-.hero{text-align:center;margin:clamp(32px,7vh,60px) 0 clamp(40px,7vh,64px);}
-.hero img{width:36px;margin:0 auto 18px;}
-.hero h1{font-size:clamp(32px,7vw,60px);}
-.hero p.sub{font-size:clamp(13px,2.4vw,15px);color:var(--text-dim);max-width:380px;margin:14px auto 0;line-height:1.6;}
+.shell{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,32px) 100px;}
+.hero{text-align:center;margin:clamp(34px,8vh,72px) 0 clamp(44px,8vh,76px);}
+.hero img{width:38px;margin:0 auto 20px;}
+.hero h1{font-size:clamp(36px,7.4vw,68px);color:var(--ink);}
+.hero .rule{width:52px;height:1px;background:var(--camel-deep);opacity:.55;margin:22px auto;}
+.hero p.sub{font-size:clamp(13.5px,2.3vw,16px);color:var(--ink-soft);max-width:400px;margin:0 auto;line-height:1.7;}
 
-.section-head{margin:0 0 16px;}
-.section-head h2{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin:0 0 5px;color:var(--steel);}
-.section-head p{font-size:12.5px;color:var(--text-faint);margin:0;}
-.rule{border:none;border-top:1px solid var(--line);margin:0 0 22px;}
+.section{margin-bottom:clamp(50px,8vh,86px);}
+.section-head{margin:0 0 18px;}
+.section-head h2{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;margin:0 0 5px;color:var(--camel-deep);}
+.section-head p{font-size:13px;color:var(--ink-faint);margin:0;}
+.rule-line{border:none;border-top:1px solid var(--line);margin:0 0 24px;}
+
+/* browse chips */
+.browse-row{display:flex;gap:9px;flex-wrap:wrap;}
+.browse-chip{
+  padding:10px 20px;border-radius:999px;border:1px solid var(--line-strong);
+  color:var(--ink-soft);font-size:13px;font-weight:500;background:transparent;
+  transition:all .25s ease;
+}
+.browse-chip:hover{border-color:var(--camel);color:var(--ink);}
+.browse-chip.active{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+
+/* results strip */
+.result-strip{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;}
+.result-card{width:clamp(120px,26vw,150px);cursor:pointer;}
+.result-card .shot{
+  aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#fff;
+  box-shadow:0 12px 24px rgba(51,40,31,.12);transition:transform .4s cubic-bezier(.2,.85,.3,1),box-shadow .4s;
+}
+.result-card .shot img{width:100%;height:100%;object-fit:cover;}
+.result-card:hover .shot{transform:translateY(-5px);box-shadow:0 20px 34px rgba(51,40,31,.19);}
+.result-card p{font-size:13px;margin:11px 0 0;color:var(--ink);text-align:center;}
+.result-empty{font-size:13.5px;color:var(--ink-faint);margin-top:20px;}
+
+/* finder (branching tree) */
+.finder{
+  background:var(--paper-warm);border:1px solid var(--line);border-radius:18px;
+  padding:clamp(22px,4vw,38px);
+}
+.finder-steps{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.crumb{font-size:12px;color:var(--ink-faint);display:flex;align-items:center;gap:10px;}
+.crumb b{font-weight:600;color:var(--umber);}
+.crumb .arrow{opacity:.5;}
+.finder-q{font-size:clamp(19px,3.2vw,26px);font-weight:500;color:var(--ink);margin:0 0 20px;letter-spacing:-.01em;}
+.branch-row{display:flex;gap:12px;flex-wrap:wrap;}
+.branch-btn{
+  padding:16px 26px;border-radius:12px;border:1px solid var(--line-strong);
+  background:var(--paper);color:var(--ink);font-size:15px;font-weight:500;
+  transition:all .3s cubic-bezier(.2,.85,.3,1);min-width:120px;text-align:left;
+}
+.branch-btn:hover{border-color:var(--camel-deep);transform:translateY(-2px);box-shadow:0 10px 22px rgba(51,40,31,.1);}
+.branch-btn small{display:block;font-size:11.5px;color:var(--ink-faint);margin-top:4px;font-weight:400;}
+.finder-reset{font-size:12px;color:var(--ink-faint);text-decoration:underline;margin-top:18px;display:inline-block;}
+.finder-reset:hover{color:var(--ink-soft);}
 
 /* menus */
-.cat-scroll{
-  display:flex;gap:16px;overflow-x:auto;padding:2px 2px 16px;margin-bottom:clamp(48px,8vh,72px);
-  scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
-}
+.cat-scroll{display:flex;gap:18px;overflow-x:auto;padding:2px 2px 18px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;}
 .cat-scroll::-webkit-scrollbar{height:4px;}
 .cat-scroll::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px;}
 .cat-tile{
-  position:relative;flex:0 0 auto;width:clamp(220px,64vw,278px);aspect-ratio:16/10;
+  position:relative;flex:0 0 auto;width:clamp(230px,66vw,300px);aspect-ratio:16/10;
   border-radius:16px;overflow:hidden;cursor:pointer;scroll-snap-align:start;text-decoration:none;
-  transition:transform .45s cubic-bezier(.2,.85,.3,1);isolation:isolate;
+  transition:transform .45s cubic-bezier(.2,.85,.3,1),box-shadow .45s;
+  box-shadow:0 14px 30px rgba(51,40,31,.13);isolation:isolate;
+  background:var(--sand);
 }
-.cat-tile:hover{transform:translateY(-5px);}
-.cat-tile canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transform:scale(1.06);}
+.cat-tile:hover{transform:translateY(-5px);box-shadow:0 22px 42px rgba(51,40,31,.2);}
+.cat-tile canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
 .cat-tile .veil{
-  position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;padding:16px;
-  background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.62) 100%);
+  position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:flex-end;padding:17px;
+  background:linear-gradient(180deg,transparent 42%,rgba(51,40,31,.55) 100%);
 }
-.cat-tile .t-name{font-size:16px;font-weight:600;margin:0 0 3px;color:#fff;}
-.cat-tile .t-count{font-size:11.5px;color:rgba(255,255,255,.8);margin:0;}
+.cat-tile .t-name{font-size:16.5px;font-weight:600;margin:0 0 3px;color:#fff;}
+.cat-tile .t-count{font-size:11.5px;color:rgba(255,255,255,.82);margin:0;}
 
-/* infinite grid — full bleed, images only */
+/* infinite grid */
 .ig-band{
   position:relative;width:100vw;left:50%;transform:translateX(-50%);
-  height:clamp(420px,72vh,780px);overflow:hidden;cursor:grab;
-  touch-action:none;user-select:none;
+  height:clamp(400px,68vh,720px);overflow:hidden;cursor:grab;touch-action:none;user-select:none;
 }
 .ig-band.grabbing{cursor:grabbing;}
 .ig-layer{position:absolute;inset:0;}
-.ig-cell{
-  position:absolute;top:0;left:0;will-change:transform;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-}
+.ig-cell{position:absolute;top:0;left:0;will-change:transform;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .ig-cell img{
-  max-width:88%;max-height:88%;object-fit:contain;pointer-events:none;
-  filter:drop-shadow(0 18px 26px rgba(0,0,0,.5));
-  transition:transform .42s cubic-bezier(.2,.85,.3,1);
+  width:86%;height:86%;object-fit:cover;border-radius:10px;pointer-events:none;
+  box-shadow:0 14px 26px rgba(51,40,31,.16);
+  transition:transform .42s cubic-bezier(.2,.85,.3,1),box-shadow .42s;
 }
-.ig-cell:hover img{transform:scale(1.09);}
-.ig-hint{text-align:center;font-size:11.5px;color:var(--text-faint);margin:16px 0 0;letter-spacing:.04em;}
-#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:50px 0;}
+.ig-cell:hover img{transform:scale(1.06);box-shadow:0 22px 36px rgba(51,40,31,.24);}
+.ig-hint{text-align:center;font-size:11.5px;color:var(--ink-faint);margin:18px 0 0;letter-spacing:.05em;}
+
+#stateMsg{text-align:center;color:var(--ink-soft);font-size:14px;padding:60px 0;}
 footer{text-align:center;margin-top:70px;}
-footer img{width:96px;margin:0 auto;opacity:.5;}
+footer img{width:96px;margin:0 auto;opacity:.4;}
 </style>
 </head>
 <body>
@@ -74,28 +115,51 @@ footer img{width:96px;margin:0 auto;opacity:.5;}
 
 <div class="shell">
   <div class="hero">
-    <img src="assets/logos/bu-mark-light.svg" alt="Beverage Union">
+    <img src="assets/logos/bu-mark-dark.svg" alt="Beverage Union">
     <p class="eyebrow">Atlas</p>
     <h1 class="h-display">Every drink,<br>one place.</h1>
+    <div class="rule"></div>
     <p class="sub">The full collection, and every menu built from it.</p>
   </div>
 
-  <div id="catSection" style="display:none;">
+  <!-- browse by category / type -->
+  <div class="section" id="browseSection" style="display:none;">
+    <div class="section-head"><h2>Browse</h2><p>By category or style.</p></div>
+    <hr class="rule-line">
+    <div class="browse-row" id="browseRow"></div>
+    <div class="result-strip" id="browseResults"></div>
+  </div>
+
+  <!-- branching finder -->
+  <div class="section" id="finderSection" style="display:none;">
+    <div class="section-head"><h2>Choose your own</h2><p>A few questions, and we'll narrow it down.</p></div>
+    <hr class="rule-line">
+    <div class="finder">
+      <div class="finder-steps" id="finderCrumbs"></div>
+      <p class="finder-q" id="finderQ"></p>
+      <div class="branch-row" id="finderBranches"></div>
+      <div class="result-strip" id="finderResults"></div>
+      <a class="finder-reset" id="finderReset" style="display:none;">Start over</a>
+    </div>
+  </div>
+
+  <!-- menus -->
+  <div class="section" id="catSection" style="display:none;">
     <div class="section-head"><h2>Menus</h2><p>Curated selections, ready to share.</p></div>
-    <hr class="rule">
+    <hr class="rule-line">
     <div class="cat-scroll" id="catScroll"></div>
   </div>
 
-  <div id="gridSection" style="display:none;">
+  <!-- everything -->
+  <div class="section" id="gridSection" style="display:none;">
     <div class="section-head"><h2>Everything we offer</h2><p id="gridCount"></p></div>
-    <hr class="rule">
+    <hr class="rule-line">
     <div class="ig-band" id="igViewport"></div>
     <p class="ig-hint">Drag in any direction &#183; tap a drink to open it</p>
   </div>
 
   <div id="stateMsg">Loading&#8230;</div>
-
-  <footer><img src="assets/logos/bu-wordmark-light.svg" alt="Beverage Union"></footer>
+  <footer><img src="assets/logos/bu-wordmark-dark.svg" alt="Beverage Union"></footer>
 </div>
 
 <script src="assets/vendor/three.min.js"></script>
@@ -104,6 +168,8 @@ footer img{width:96px;margin:0 auto;opacity:.5;}
 <script src="assets/js/infinite-grid.js"></script>
 <script src="assets/js/drink-detail.js"></script>
 <script>
+let DRINKS = [];
+
 async function boot(){
   try{
     const [catRes, drinkRes] = await Promise.all([
@@ -114,20 +180,26 @@ async function boot(){
     if(!drinkRes.ok) throw new Error('Could not load drinks (' + drinkRes.status + ')');
 
     const catalogues = await catRes.json();
-    const drinks = await drinkRes.json();
+    DRINKS = await drinkRes.json();
     document.getElementById('stateMsg').style.display = 'none';
+
+    if(DRINKS.length){
+      buildBrowse();
+      buildFinder();
+      document.getElementById('gridSection').style.display = 'block';
+      document.getElementById('gridCount').textContent = DRINKS.length + (DRINKS.length===1?' drink':' drinks');
+      buInfiniteGrid({ viewport: document.getElementById('igViewport'), items: DRINKS, onOpen: buOpenDrink });
+    }
 
     if(catalogues.length){
       document.getElementById('catSection').style.display = 'block';
       const scroll = document.getElementById('catScroll');
       catalogues.forEach(c=>{
         const tile = document.createElement('a');
-        tile.className = 'cat-tile bu-grain';
-        tile.href = 'c/?id=' + c.id;
+        tile.className='cat-tile'; tile.href = 'c/?id=' + c.id;
         const canvas = document.createElement('canvas');
         tile.appendChild(canvas);
-        const veil = document.createElement('div');
-        veil.className = 'veil';
+        const veil = document.createElement('div'); veil.className='veil';
         veil.innerHTML = '<p class="t-name"></p><p class="t-count"></p>';
         veil.querySelector('.t-name').textContent = c.name;
         veil.querySelector('.t-count').textContent = (c.drink_ids||[]).length + ' drinks';
@@ -137,25 +209,137 @@ async function boot(){
       });
     }
 
-    if(drinks.length){
-      document.getElementById('gridSection').style.display = 'block';
-      document.getElementById('gridCount').textContent = drinks.length + (drinks.length===1?' drink':' drinks');
-      buInfiniteGrid({
-        viewport: document.getElementById('igViewport'),
-        items: drinks,
-        onOpen: buOpenDrink
-      });
-    }
-
-    if(!catalogues.length && !drinks.length){
+    if(!catalogues.length && !DRINKS.length){
       const m = document.getElementById('stateMsg');
-      m.style.display = 'block';
+      m.style.display='block';
       m.textContent = 'Nothing published yet \u2014 turn on "On home" for a drink or menu in the admin panel.';
     }
   } catch(err){
     document.getElementById('stateMsg').textContent = err.message || 'Could not load Atlas.';
   }
 }
+
+/* ---------- results rendering ---------- */
+function renderResults(container, list, emptyMsg){
+  container.innerHTML = '';
+  if(!list.length){
+    const p = document.createElement('p');
+    p.className='result-empty'; p.textContent = emptyMsg || 'Nothing matches yet.';
+    container.appendChild(p);
+    return;
+  }
+  list.forEach(d=>{
+    const card = document.createElement('div'); card.className='result-card';
+    card.innerHTML = '<div class="shot"><img alt=""></div><p></p>';
+    card.querySelector('img').src = d.image_url;
+    card.querySelector('img').alt = d.name;
+    card.querySelector('p').textContent = d.name;
+    card.addEventListener('click', ()=> buOpenDrink(d));
+    container.appendChild(card);
+  });
+}
+
+/* ---------- browse by category / type ---------- */
+let browseFilter = null;
+function buildBrowse(){
+  const cats  = Array.from(new Set(DRINKS.map(d=>d.category).filter(Boolean)));
+  const types = Array.from(new Set(DRINKS.map(d=>d.type).filter(Boolean)));
+  const all = cats.concat(types.filter(t=>!cats.includes(t)));
+  if(!all.length) return;
+
+  document.getElementById('browseSection').style.display='block';
+  const row = document.getElementById('browseRow');
+  row.innerHTML='';
+  all.forEach(name=>{
+    const b = document.createElement('button');
+    b.className='browse-chip' + (browseFilter===name ? ' active' : '');
+    b.textContent = name;
+    b.addEventListener('click', ()=>{
+      browseFilter = (browseFilter === name) ? null : name;
+      buildBrowse();
+    });
+    row.appendChild(b);
+  });
+
+  const results = document.getElementById('browseResults');
+  if(!browseFilter){ results.innerHTML=''; return; }
+  renderResults(results, DRINKS.filter(d=> d.category===browseFilter || d.type===browseFilter));
+}
+
+/* ---------- branching finder ----------
+   Steps are derived from the data that exists, so this keeps working
+   as more drinks and categories are added.                            */
+const FINDER_STEPS = [
+  { key:'category', q:'Hot or cold?',      hint:'How would you like it served' },
+  { key:'type',     q:'What style?',        hint:'The kind of drink' },
+  { key:'bean',     q:'Which bean?',        hint:'Romance is warmer, Euphoria is brighter' }
+];
+let finderPath = [];
+
+function finderPool(){
+  return DRINKS.filter(d=> finderPath.every(p=> d[p.key] === p.value));
+}
+function buildFinder(){
+  const hasAny = DRINKS.some(d=> d.category || d.type || d.bean);
+  if(!hasAny) return;
+  document.getElementById('finderSection').style.display='block';
+  renderFinder();
+}
+function renderFinder(){
+  const crumbs = document.getElementById('finderCrumbs');
+  const qEl = document.getElementById('finderQ');
+  const branches = document.getElementById('finderBranches');
+  const results = document.getElementById('finderResults');
+  const reset = document.getElementById('finderReset');
+
+  crumbs.innerHTML='';
+  finderPath.forEach((p,i)=>{
+    const c = document.createElement('span'); c.className='crumb';
+    c.innerHTML = (i>0 ? '<span class="arrow">&#8594;</span> ' : '') + '<b></b>';
+    c.querySelector('b').textContent = p.value;
+    crumbs.appendChild(c);
+  });
+  reset.style.display = finderPath.length ? 'inline-block' : 'none';
+
+  const pool = finderPool();
+  // find the next step that actually splits the remaining drinks
+  const used = finderPath.map(p=>p.key);
+  let step = null, options = [];
+  for(const s of FINDER_STEPS){
+    if(used.includes(s.key)) continue;
+    const vals = Array.from(new Set(pool.map(d=>d[s.key]).filter(Boolean)));
+    if(vals.length > 1){ step = s; options = vals; break; }
+  }
+
+  if(step){
+    qEl.textContent = step.q;
+    qEl.style.display='block';
+    branches.innerHTML='';
+    options.forEach(v=>{
+      const count = pool.filter(d=> d[step.key] === v).length;
+      const b = document.createElement('button');
+      b.className='branch-btn';
+      b.innerHTML = '<span></span><small></small>';
+      b.querySelector('span').textContent = v;
+      b.querySelector('small').textContent = count + (count===1?' drink':' drinks');
+      b.addEventListener('click', ()=>{
+        finderPath.push({ key: step.key, value: v });
+        renderFinder();
+      });
+      branches.appendChild(b);
+    });
+    results.innerHTML='';
+  } else {
+    // nothing left to ask — show what's left
+    branches.innerHTML='';
+    qEl.textContent = finderPath.length ? 'Here\u2019s what fits' : 'Everything we pour';
+    renderResults(results, pool, 'Nothing matches that combination.');
+  }
+}
+document.getElementById('finderReset').addEventListener('click', ()=>{
+  finderPath = []; renderFinder();
+});
+
 boot();
 </script>
 </body>

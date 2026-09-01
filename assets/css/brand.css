@@ -6,22 +6,32 @@
 @font-face{font-family:'General Sans';src:url('../fonts/GeneralSans-Italic.woff2') format('woff2');font-weight:400;font-style:italic;font-display:swap;}
 
 :root{
-  --charcoal:#1A1A1A;
-  --charcoal-deep:#100D0B;
-  --steel:#5D8DA0;
-  --cream:#F5EDD8;
-  --parchment:#FAF9F7;
-  --plum:#6B3B7A;
-  --orange:#CC5500;
-  --teal:#1B6B7D;
-  --sage:#5B7A5B;
-  --line: rgba(250,249,247,0.14);
-  --line-strong: rgba(250,249,247,0.28);
-  --text-dim: rgba(250,249,247,0.6);
-  --text-faint: rgba(250,249,247,0.38);
+  /* warm cream / camel palette */
+  --paper:#F3EADC;          /* page */
+  --paper-warm:#EDE0CD;     /* raised */
+  --sand:#E2CFB4;
+  --camel:#C39B6D;
+  --camel-deep:#A67C4E;
+  --umber:#6B4F35;
+  --ink:#33281F;            /* primary text */
+  --ink-soft:#6E5C4B;
+  --ink-faint:#9A8874;
+  --line: rgba(51,40,31,0.14);
+  --line-strong: rgba(51,40,31,0.26);
+
+  /* legacy aliases so older rules keep working */
+  --charcoal:#F3EADC;
+  --charcoal-deep:#EDE0CD;
+  --parchment:#33281F;
+  --cream:#EDE0CD;
+  --steel:#A67C4E;
+  --text-dim: rgba(51,40,31,0.66);
+  --text-faint: rgba(51,40,31,0.45);
+  --plum:#7A4A63;
+  --orange:#B5541F;
 }
 *{box-sizing:border-box;}
-html,body{margin:0;padding:0;background:var(--charcoal);color:var(--parchment);}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);}
 body{
   font-family:'General Sans',sans-serif;
   -webkit-font-smoothing:antialiased;
@@ -32,12 +42,10 @@ button{font-family:inherit;cursor:pointer;background:none;border:none;color:inhe
 a{color:inherit;}
 
 .eyebrow{
-  font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--steel);
+  font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--camel-deep);
   margin:0 0 14px;
 }
 .h-display{
-  font-family:'General Sans',sans-serif;font-weight:600;letter-spacing:-0.02em;line-height:0.98;margin:0;
+  font-weight:600;letter-spacing:-0.025em;line-height:0.98;margin:0;
 }
-.body-text{
-  font-size:16px;line-height:1.6;color:var(--text-dim);font-weight:400;
-}
+.body-text{font-size:16px;line-height:1.65;color:var(--ink-soft);font-weight:400;}

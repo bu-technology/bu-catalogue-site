@@ -515,7 +515,8 @@ function buStartBackground(canvas, presetKey, colors, opts){
 
   let renderer;
   try{
-    renderer = new THREE.WebGLRenderer({ canvas, antialias:false, alpha:false, powerPreference:'default' });
+    renderer = new THREE.WebGLRenderer({ canvas, antialias:false, alpha:true, powerPreference:'default' });
+    renderer.setClearColor(0x000000, 0);
   } catch(e){
     canvas.style.background = (colors && colors[0]) || preset.color1;
     return { stop(){}, resume(){}, setColors(){}, setPreset(){} };

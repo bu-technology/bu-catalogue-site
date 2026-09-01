@@ -13,18 +13,18 @@
 /* ---------- drink detail overlay ---------- */
 #buDetail{
   position:fixed;inset:0;z-index:200;display:none;
-  background:rgba(8,7,6,.82);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+  background:rgba(243,234,220,.93);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
   opacity:0;transition:opacity .34s ease;
   overflow-y:auto;
 }
 #buDetail.open{opacity:1;}
 .bu-detail-close{
   position:fixed;top:20px;right:20px;width:42px;height:42px;border-radius:50%;
-  border:1px solid var(--line-strong);color:var(--parchment);font-size:17px;
+  border:1px solid var(--line-strong);color:var(--ink);font-size:17px;
   display:flex;align-items:center;justify-content:center;z-index:210;
-  background:rgba(0,0,0,.3);backdrop-filter:blur(6px);
+  background:rgba(255,255,255,.6);backdrop-filter:blur(6px);
 }
-.bu-detail-close:hover{background:rgba(250,249,247,.1);}
+.bu-detail-close:hover{background:#fff;}
 .bu-detail-inner{
   min-height:100%;display:flex;align-items:center;justify-content:center;
   gap:clamp(24px,5vw,64px);padding:clamp(64px,8vh,90px) clamp(20px,5vw,48px);
@@ -32,27 +32,27 @@
 }
 .bu-detail-media{flex:1 1 44%;display:flex;align-items:center;justify-content:center;}
 .bu-detail-media img{
-  max-width:100%;max-height:56vh;object-fit:contain;
-  filter:drop-shadow(0 34px 54px rgba(0,0,0,.6));
+  max-width:100%;max-height:56vh;object-fit:contain;border-radius:12px;
+  box-shadow:0 30px 60px rgba(51,40,31,.22);
   animation:buRise .6s cubic-bezier(.2,.9,.3,1) both;
 }
 .bu-detail-body{flex:1 1 50%;animation:buRise .6s .07s cubic-bezier(.2,.9,.3,1) both;}
 .bu-detail-body .kicker{
   font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--steel);margin:0 0 12px;
+  color:var(--camel-deep);margin:0 0 12px;
 }
 .bu-detail-body h2{
   font-weight:600;font-size:clamp(28px,5vw,46px);line-height:1.02;
   letter-spacing:-.02em;margin:0 0 16px;
 }
 .bu-detail-body .desc{
-  font-size:clamp(14px,1.6vw,16px);line-height:1.65;color:var(--text-dim);
+  font-size:clamp(14px,1.6vw,16px);line-height:1.65;color:var(--ink-soft);
   margin:0 0 22px;max-width:440px;
 }
 .bu-detail-tags{display:flex;gap:8px;flex-wrap:wrap;}
 .bu-tag{
   font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
-  padding:6px 13px;border-radius:999px;border:1px solid var(--line);color:var(--text-dim);
+  padding:6px 13px;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink-soft);
 }
 @keyframes buRise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
 

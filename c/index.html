@@ -7,82 +7,96 @@
 <link rel="stylesheet" href="../assets/css/brand.css">
 <link rel="stylesheet" href="../assets/css/shared.css">
 <style>
-body{overflow-x:hidden;}
-#bgHost{position:fixed;inset:0;z-index:-1;overflow:hidden;}
-#bgHost canvas{position:absolute;inset:0;width:100%;height:100%;display:block;transform:scale(1.1);}
-#bgHost::after{
-  content:"";position:absolute;inset:0;opacity:.18;mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+body{background:var(--paper);}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;
+  height:clamp(460px,74vh,760px);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;isolation:isolate;
 }
-#bgHost .vignette{
-  position:absolute;inset:0;
-  background:radial-gradient(120% 90% at 50% 40%, transparent 30%, rgba(0,0,0,.55) 100%);
+.hero-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;}
+/* soft wash so the type always reads, whatever the gradient is doing */
+.hero::before{
+  content:"";position:absolute;inset:0;z-index:1;
+  background:radial-gradient(78% 62% at 50% 46%, rgba(243,234,220,.60), rgba(243,234,220,.12) 62%, transparent 100%);
+}
+/* blend into the page — no hard edge regardless of shader colours */
+.hero::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:46%;z-index:2;
+  background:linear-gradient(180deg, rgba(243,234,220,0) 0%, rgba(243,234,220,.72) 52%, var(--paper) 100%);
+}
+.hero-inner{position:relative;z-index:3;text-align:center;padding:0 clamp(20px,6vw,40px);max-width:820px;}
+.hero-marks{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:26px;}
+.hero-marks img{height:30px;width:auto;}
+.hero-marks .sep{width:1px;height:24px;background:var(--line-strong);}
+.hero .eyebrow{color:var(--umber);}
+.hero h1{font-size:clamp(38px,8vw,80px);color:var(--ink);margin:0;}
+.hero .rule{width:52px;height:1px;background:var(--camel-deep);opacity:.6;margin:24px auto;}
+.hero .desc{
+  font-size:clamp(14px,2.3vw,17px);line-height:1.7;color:var(--umber);
+  max-width:520px;margin:0 auto;
 }
 
-.shell{max-width:1280px;margin:0 auto;padding:clamp(40px,7vh,72px) clamp(16px,4vw,30px) 40px;position:relative;z-index:1;}
-.hero{text-align:center;margin-bottom:clamp(30px,6vh,52px);}
-.logo-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:22px;}
-.logo-row img{height:30px;width:auto;}
-.logo-row .sep{width:1px;height:22px;background:var(--line-strong);}
-.hero h1{font-size:clamp(30px,6.6vw,56px);text-shadow:0 4px 34px rgba(0,0,0,.45);}
-.hero p.sub{font-size:clamp(13px,2.4vw,15.5px);color:var(--parchment);opacity:.78;max-width:460px;margin:14px auto 0;line-height:1.6;}
+#stateMsg{text-align:center;color:var(--ink-soft);font-size:14px;padding:120px 20px;}
 
-#stateMsg{text-align:center;color:var(--text-dim);font-size:14px;padding:110px 20px;position:relative;z-index:1;}
-
-.cat-block{margin-bottom:clamp(26px,5vh,44px);}
+/* ---------- rows ---------- */
+.rows-wrap{max-width:1280px;margin:0 auto;padding:clamp(10px,3vh,26px) 0 30px;}
+.cat-block{margin-bottom:clamp(30px,5vh,52px);}
 .cat-label{
-  font-size:11.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--parchment);opacity:.62;margin:0 0 12px;padding-left:clamp(4px,2vw,10px);
+  font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--camel-deep);margin:0 0 14px;padding-left:clamp(18px,5vw,34px);
 }
 .marquee{
-  position:relative;overflow:hidden;cursor:grab;touch-action:pan-y;user-select:none;
-  padding:10px 0 4px;
-  -webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
-          mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
+  position:relative;overflow:hidden;cursor:grab;touch-action:pan-y;user-select:none;padding:12px 0 6px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
 }
 .marquee.grabbing{cursor:grabbing;}
 .mq-track{display:flex;will-change:transform;}
 .mq-item{
-  flex:0 0 auto;width:clamp(132px,32vw,188px);
-  margin-right:clamp(16px,3vw,30px);
+  flex:0 0 auto;width:clamp(140px,32vw,196px);margin-right:clamp(18px,3.4vw,34px);
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-  cursor:pointer;transition:transform .42s cubic-bezier(.2,.85,.3,1);
+  cursor:pointer;transition:transform .45s cubic-bezier(.2,.85,.3,1);
 }
-.mq-item img{
-  width:100%;height:clamp(150px,26vh,230px);object-fit:contain;
-  filter:drop-shadow(0 20px 28px rgba(0,0,0,.55));
-  pointer-events:none;-webkit-user-drag:none;
-  transition:transform .42s cubic-bezier(.2,.85,.3,1);
+.mq-item .shot{
+  width:100%;height:clamp(160px,27vh,244px);
+  display:flex;align-items:center;justify-content:center;
+  border-radius:10px;overflow:hidden;background:#fff;
+  box-shadow:0 16px 30px rgba(51,40,31,.13);
+  transition:box-shadow .45s ease;
 }
-.mq-item .mq-name{
-  font-size:13px;font-weight:500;color:var(--parchment);margin:12px 0 0;text-align:center;
-  text-shadow:0 2px 12px rgba(0,0,0,.7);pointer-events:none;
-}
-.mq-item:hover{transform:translateY(-7px);}
-.mq-item:hover img{transform:scale(1.05);}
+.mq-item img{width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none;}
+.mq-item .mq-name{font-size:13.5px;font-weight:500;color:var(--ink);margin:14px 0 0;text-align:center;pointer-events:none;}
+.mq-item .mq-sub{font-size:11.5px;color:var(--ink-faint);margin:3px 0 0;text-align:center;pointer-events:none;}
+.mq-item:hover{transform:translateY(-8px);}
+.mq-item:hover .shot{box-shadow:0 24px 40px rgba(51,40,31,.2);}
 
-footer{text-align:center;margin:40px 0 56px;position:relative;z-index:1;}
-footer img{width:96px;margin:0 auto;opacity:.55;}
+footer{text-align:center;margin:56px 0 60px;}
+footer img{width:96px;margin:0 auto;opacity:.4;}
 </style>
 </head>
 <body>
 
-<div id="bgHost"><div class="vignette"></div></div>
 <div id="stateMsg">Preparing the tasting&#8230;</div>
 
 <div id="content" style="display:none;">
-  <div class="shell">
-    <div class="hero">
-      <div class="logo-row" id="logoRow">
-        <img src="../assets/logos/bu-mark-light.svg" alt="Beverage Union">
+  <header class="hero">
+    <canvas class="hero-canvas" id="heroCanvas"></canvas>
+    <div class="hero-inner">
+      <div class="hero-marks" id="logoRow">
+        <img src="../assets/logos/bu-mark-dark.svg" alt="Beverage Union">
       </div>
       <p class="eyebrow">A Beverage Union tasting</p>
       <h1 class="h-display" id="catTitle"></h1>
-      <p class="sub" id="catDesc" style="display:none;"></p>
+      <div class="rule"></div>
+      <p class="desc" id="catDesc"></p>
     </div>
-    <div id="rows"></div>
-    <footer><img src="../assets/logos/bu-wordmark-light.svg" alt="Beverage Union"></footer>
-  </div>
+  </header>
+
+  <div class="rows-wrap"><div id="rows"></div></div>
+  <footer><img src="../assets/logos/bu-wordmark-dark.svg" alt="Beverage Union"></footer>
 </div>
 
 <script src="../assets/vendor/three.min.js"></script>
@@ -93,7 +107,7 @@ footer img{width:96px;margin:0 auto;opacity:.55;}
 async function boot(){
   const id = new URLSearchParams(location.search).get('id');
   const stateMsg = document.getElementById('stateMsg');
-  if(!id){ stateMsg.textContent = 'This link is missing a catalogue id.'; return; }
+  if(!id){ stateMsg.textContent = 'This link is missing a menu id.'; return; }
 
   try{
     const catalogue = await fetchCatalogue(id);
@@ -102,24 +116,23 @@ async function boot(){
     if(drinks.length === 0){ stateMsg.textContent = "This tasting doesn't have any drinks yet."; return; }
 
     document.getElementById('catTitle').textContent = catalogue.name;
-    if(catalogue.description){
-      const d = document.getElementById('catDesc');
-      d.textContent = catalogue.description; d.style.display = 'block';
-    }
+    const descEl = document.getElementById('catDesc');
+    if(catalogue.description) descEl.textContent = catalogue.description;
+    else descEl.style.display = 'none';
+
     if(catalogue.client_logo_url){
       const row = document.getElementById('logoRow');
-      const sep = document.createElement('div'); sep.className = 'sep';
+      const sep = document.createElement('div'); sep.className='sep';
       const img = document.createElement('img'); img.src = catalogue.client_logo_url; img.alt = catalogue.name;
       row.appendChild(sep); row.appendChild(img);
     }
 
-    const host = document.getElementById('bgHost');
-    const canvas = document.createElement('canvas');
-    host.insertBefore(canvas, host.firstChild);
-    buStartBackground(canvas, catalogue.background_style || 'halo', catalogue.bg_colors);
+    stateMsg.style.display='none';
+    document.getElementById('content').style.display='block';
 
-    stateMsg.style.display = 'none';
-    document.getElementById('content').style.display = 'block';
+    buStartBackground(document.getElementById('heroCanvas'),
+                      catalogue.background_style || 'halo',
+                      catalogue.bg_colors);
 
     buildRows(drinks, catalogue.categories || []);
   } catch(err){
@@ -131,69 +144,57 @@ function buildRows(drinks, order){
   const rows = document.getElementById('rows');
   const groups = new Map();
   drinks.forEach(d=>{
-    const key = d.category || 'Selection';
+    const key = d.category || 'The selection';
     if(!groups.has(key)) groups.set(key, []);
     groups.get(key).push(d);
   });
-
-  // honour the menu's declared category order, then anything left over
   const keys = [];
   order.forEach(k=>{ if(groups.has(k)) keys.push(k); });
-  groups.forEach((_, k)=>{ if(!keys.includes(k)) keys.push(k); });
+  groups.forEach((_,k)=>{ if(!keys.includes(k)) keys.push(k); });
 
   keys.forEach(key=>{
     const list = groups.get(key);
     const block = document.createElement('div');
-    block.className = 'cat-block';
-    if(keys.length > 1 || key !== 'Selection'){
-      const label = document.createElement('p');
-      label.className = 'cat-label'; label.textContent = key;
-      block.appendChild(label);
-    }
-    const mq = document.createElement('div');
-    mq.className = 'marquee';
-    const track = document.createElement('div');
-    track.className = 'mq-track';
-    mq.appendChild(track);
-    block.appendChild(mq);
-    rows.appendChild(block);
+    block.className='cat-block';
+    const label = document.createElement('p');
+    label.className='cat-label'; label.textContent = key;
+    block.appendChild(label);
+    const mq = document.createElement('div'); mq.className='marquee';
+    const track = document.createElement('div'); track.className='mq-track';
+    mq.appendChild(track); block.appendChild(mq); rows.appendChild(block);
     startMarquee(mq, track, list);
   });
 }
 
-/* Smooth infinite marquee.
-   Position is advanced in a single rAF loop and written once per frame
-   as a translate3d; drag updates a target which the loop eases toward,
-   which is what removes the stutter from the previous build. */
 function startMarquee(wrap, track, list){
-  let itemW = 0, setW = 0;
-  let pos = 0, target = 0;
-  let dragging = false, moved = false;
-  let lastX = 0, lastT = 0, vel = 0;
-  const DRIFT = 0.022;
-  const FRICTION = 0.94;
+  let itemW = 0, setW = 0, pos = 0, target = 0;
+  let dragging = false, moved = false, startX = 0, lastX = 0, lastT = 0, vel = 0;
+  const DRIFT = 0.02, FRICTION = 0.94;
 
   function fill(){
     track.innerHTML = '';
     const probe = document.createElement('div');
-    probe.className = 'mq-item';
-    track.appendChild(probe);
-    const style = getComputedStyle(probe);
-    itemW = probe.getBoundingClientRect().width + parseFloat(style.marginRight || 0);
+    probe.className='mq-item'; track.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    itemW = probe.getBoundingClientRect().width + parseFloat(cs.marginRight || 0);
     probe.remove();
-    if(!itemW || !isFinite(itemW)) itemW = 200;
+    if(!itemW || !isFinite(itemW)) itemW = 210;
 
-    // enough copies to cover the viewport twice over
-    const need = Math.max(2, Math.ceil((wrap.clientWidth * 2) / (itemW * list.length)) + 1);
+    const need = Math.max(2, Math.ceil((wrap.clientWidth*2)/(itemW*list.length)) + 1);
     for(let c=0;c<need;c++){
       list.forEach(d=>{
         const item = document.createElement('div');
-        item.className = 'mq-item';
+        item.className='mq-item';
+        const shot = document.createElement('div'); shot.className='shot';
         const img = document.createElement('img');
-        img.src = d.image_url; img.alt = d.name; img.draggable = false; img.loading = 'lazy';
-        const nm = document.createElement('p');
-        nm.className = 'mq-name'; nm.textContent = d.name;
-        item.appendChild(img); item.appendChild(nm);
+        img.src = d.image_url; img.alt = d.name; img.draggable=false; img.loading='lazy';
+        shot.appendChild(img);
+        const nm = document.createElement('p'); nm.className='mq-name'; nm.textContent = d.name;
+        item.appendChild(shot); item.appendChild(nm);
+        if(d.type){
+          const sub = document.createElement('p'); sub.className='mq-sub'; sub.textContent = d.type;
+          item.appendChild(sub);
+        }
         item.addEventListener('click', ()=>{ if(!moved) buOpenDrink(d); });
         track.appendChild(item);
       });
@@ -208,35 +209,21 @@ function startMarquee(wrap, track, list){
     if(prevT === null) prevT = t;
     let dt = t - prevT; prevT = t;
     if(dt > 60) dt = 60;
-
-    if(dragging){
-      pos += (target - pos) * 0.28;          // ease toward the finger
-    } else if(Math.abs(vel) > DRIFT){
-      pos += vel * dt;
-      vel *= Math.pow(FRICTION, dt/16.67);
-      target = pos;
-    } else {
-      vel = 0;
-      pos += DRIFT * dt;                      // idle drift
-      target = pos;
-    }
-
+    if(dragging){ pos += (target - pos) * 0.28; }
+    else if(Math.abs(vel) > DRIFT){ pos += vel*dt; vel *= Math.pow(FRICTION, dt/16.67); target = pos; }
+    else { vel = 0; pos += DRIFT*dt; target = pos; }
     if(setW > 0){
       while(pos >= setW*2){ pos -= setW; target -= setW; }
-      while(pos < setW)   { pos += setW; target += setW; }
+      while(pos < setW){ pos += setW; target += setW; }
     }
     track.style.transform = 'translate3d(' + (-pos).toFixed(2) + 'px,0,0)';
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 
-  // Pointer capture is deliberately avoided: it retargets click events to
-  // the wrapper and stops taps reaching the individual drinks.
-  let startX = 0;
   wrap.addEventListener('pointerdown', e=>{
     dragging = true; moved = false;
-    startX = lastX = e.clientX; lastT = performance.now(); vel = 0;
-    target = pos;
+    startX = lastX = e.clientX; lastT = performance.now(); vel = 0; target = pos;
     wrap.classList.add('grabbing');
   });
   function onMove(e){
@@ -259,11 +246,8 @@ function startMarquee(wrap, track, list){
   window.addEventListener('pointerup', release);
   window.addEventListener('pointercancel', release);
 
-  let rt = null;
-  window.addEventListener('resize', ()=>{
-    clearTimeout(rt);
-    rt = setTimeout(()=>{ fill(); }, 150);
-  });
+  let rt=null;
+  window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(fill,150); });
 }
 
 boot();
