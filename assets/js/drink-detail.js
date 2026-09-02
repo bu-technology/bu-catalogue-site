@@ -30,7 +30,7 @@
     document.getElementById('buDetailImg').alt = d.name;
     document.getElementById('buDetailName').textContent = d.name;
     document.getElementById('buDetailDesc').textContent = d.description || '';
-    const kick = [d.category, d.type].filter(Boolean).join(' \u00b7 ');
+    const kick = (d.categories||[]).concat(d.type ? [d.type] : []).filter(Boolean).join(' \u00b7 ');
     document.getElementById('buDetailKicker').textContent = kick;
     const tags = document.getElementById('buDetailTags');
     tags.innerHTML = '';

@@ -21,7 +21,7 @@ async function fetchCatalogue(id){
 async function fetchDrinksByIds(ids){
   if(!ids || ids.length === 0) return [];
   const list = ids.map(id => '"' + id + '"').join(',');
-  const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=in.(' + list + ')&select=id,name,description,image_url,bean,type,category,tasting_notes', { headers: buHeaders() });
+  const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=in.(' + list + ')&select=id,name,description,image_url,bean,type,categories,tasting_notes', { headers: buHeaders() });
   if(!res.ok) throw new Error('Could not load drinks (' + res.status + ')');
   const rows = await res.json();
   const byId = {};

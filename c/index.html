@@ -146,9 +146,11 @@ function buildRows(drinks, order){
   const rows = document.getElementById('rows');
   const groups = new Map();
   drinks.forEach(d=>{
-    const key = d.category || 'The selection';
-    if(!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(d);
+    const cats = (d.categories && d.categories.length) ? d.categories : ['The selection'];
+    cats.forEach(key=>{
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(d);
+    });
   });
   const keys = [];
   order.forEach(k=>{ if(groups.has(k)) keys.push(k); });

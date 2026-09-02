@@ -176,7 +176,7 @@ async function boot(){
   try{
     const [catRes, drinkRes] = await Promise.all([
       fetch(SUPABASE_URL + '/rest/v1/catalogues?is_public=eq.true&select=id,name,drink_ids,background_style,bg_colors&order=created_at.desc', { headers: buHeaders() }),
-      fetch(SUPABASE_URL + '/rest/v1/drinks?is_public=eq.true&select=id,name,description,image_url,bean,type,category,tasting_notes&order=created_at.desc', { headers: buHeaders() })
+      fetch(SUPABASE_URL + '/rest/v1/drinks?is_public=eq.true&select=id,name,description,image_url,bean,type,categories,tasting_notes&order=created_at.desc', { headers: buHeaders() })
     ]);
     if(!catRes.ok) throw new Error('Could not load menus (' + catRes.status + ')');
     if(!drinkRes.ok) throw new Error('Could not load drinks (' + drinkRes.status + ')');
@@ -244,7 +244,7 @@ function renderResults(container, list, emptyMsg){
 /* ---------- browse by category / type ---------- */
 let browseFilter = null;
 function buildBrowse(){
-  const cats  = Array.from(new Set(DRINKS.map(d=>d.category).filter(Boolean)));
+  const cats  = Array.from(new Set(DRINKS.flatMap(d=>d.categories||[])));
   const types = Array.from(new Set(DRINKS.map(d=>d.type).filter(Boolean)));
   const all = cats.concat(types.filter(t=>!cats.includes(t)));
   if(!all.length) return;
@@ -265,7 +265,7 @@ function buildBrowse(){
 
   const results = document.getElementById('browseResults');
   if(!browseFilter){ results.innerHTML=''; return; }
-  renderResults(results, DRINKS.filter(d=> d.category===browseFilter || d.type===browseFilter));
+  renderResults(results, DRINKS.filter(d=> (d.categories||[]).includes(browseFilter) || d.type===browseFilter));
 }
 
 /* ---------- branching finder ----------
@@ -277,11 +277,15 @@ const FINDER_STEPS = [
 ];
 let finderPath = [];
 
+function finderMatch(d, key, value){
+  if(key === 'category') return (d.categories||[]).includes(value);
+  return d[key] === value;
+}
 function finderPool(){
-  return DRINKS.filter(d=> finderPath.every(p=> d[p.key] === p.value));
+  return DRINKS.filter(d=> finderPath.every(p=> finderMatch(d, p.key, p.value)));
 }
 function buildFinder(){
-  const hasAny = DRINKS.some(d=> d.category || d.type);
+  const hasAny = DRINKS.some(d=> (d.categories&&d.categories.length) || d.type);
   if(!hasAny) return;
   document.getElementById('finderSection').style.display='block';
   renderFinder();
@@ -308,7 +312,8 @@ function renderFinder(){
   let step = null, options = [];
   for(const s of FINDER_STEPS){
     if(used.includes(s.key)) continue;
-    const vals = Array.from(new Set(pool.map(d=>d[s.key]).filter(Boolean)));
+    const raw = s.key === 'category' ? pool.flatMap(d=>d.categories||[]) : pool.map(d=>d[s.key]);
+    const vals = Array.from(new Set(raw.filter(Boolean)));
     if(vals.length > 1){ step = s; options = vals; break; }
   }
 
@@ -317,7 +322,7 @@ function renderFinder(){
     qEl.style.display='block';
     branches.innerHTML='';
     options.forEach(v=>{
-      const count = pool.filter(d=> d[step.key] === v).length;
+      const count = pool.filter(d=> finderMatch(d, step.key, v)).length;
       const b = document.createElement('button');
       b.className='branch-btn';
       b.innerHTML = '<span></span><small></small>';

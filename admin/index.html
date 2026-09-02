@@ -213,7 +213,7 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
           <div class="chip-row" id="typeSelect"></div>
         </div>
         <div class="field">
-          <label>Category</label>
+          <label>Categories <span style="text-transform:none;font-weight:400;">(pick as many as apply)</span></label>
           <div class="chip-row" id="catSelect"></div>
         </div>
         <div class="field">
@@ -320,7 +320,6 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
 
 <script src="../assets/vendor/three.min.js"></script>
 <script src="../assets/js/backgrounds.js"></script>
-<script src="../assets/js/matte.js"></script>
 <script>
 const SUPABASE_URL = "https://dmxpltiomvluuooojayh.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRteHBsdGlvbXZsdXVvb29qYXloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwNDQ2MzgsImV4cCI6MjEwMjYyMDYzOH0.t8zKwbbO05VhAaJFuRZBTMmkrHffZWgOwLWtkznnTFY";
@@ -423,16 +422,26 @@ async function renameTaxonomy(item, kind){
       method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}), body: JSON.stringify({ name })
     });
     if(!res.ok) throw new Error('Rename failed.');
-    // keep existing drinks pointing at the new name
-    const col = kind === 'type' ? 'type' : 'category';
-    await fetch(SUPABASE_URL + '/rest/v1/drinks?' + col + '=eq.' + encodeURIComponent(item.name), {
-      method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}),
-      body: JSON.stringify({ [col]: name })
-    });
-    if(kind === 'category'){
+
+    if(kind === 'type'){
+      // type is still a single column on drinks
+      await fetch(SUPABASE_URL + '/rest/v1/drinks?type=eq.' + encodeURIComponent(item.name), {
+        method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}),
+        body: JSON.stringify({ type: name })
+      });
+    } else {
+      // categories is an array on drinks — update each matching row's array in place
+      const affectedDrinks = allDrinks.filter(d => (d.categories||[]).includes(item.name));
+      for(const d of affectedDrinks){
+        const updated = (d.categories||[]).map(x => x === item.name ? name : x);
+        await fetch(SUPABASE_URL + '/rest/v1/drinks?id=eq.' + d.id, {
+          method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}),
+          body: JSON.stringify({ categories: updated })
+        });
+      }
       // and any menus that list it
-      const affected = allCatalogues.filter(c => (c.categories||[]).includes(item.name));
-      for(const c of affected){
+      const affectedCats = allCatalogues.filter(c => (c.categories||[]).includes(item.name));
+      for(const c of affectedCats){
         const updated = (c.categories||[]).map(x => x === item.name ? name : x);
         await fetch(SUPABASE_URL + '/rest/v1/catalogues?id=eq.' + c.id, {
           method:'PATCH', headers: apiHeaders({'Content-Type':'application/json'}),
@@ -492,7 +501,7 @@ async function quickAddTaxonomy(kind, name){
     body: JSON.stringify({ name, kind, sort_order: existing.length + 1 })
   });
   if(!res.ok) throw new Error(res.status===409 ? 'That already exists.' : 'Could not add it.');
-  if(kind==='type') selectedType = name; else selectedCategory = name;
+  if(kind==='type') selectedType = name; else selectedCategories.add(name);
   await loadCategories();
 }
 
@@ -516,11 +525,12 @@ function renderDrinkCatChips(){
   row.innerHTML='';
   allCats.forEach(c=>{
     const b = document.createElement('button');
-    b.type='button'; b.className='chip' + (selectedCategory===c.name ? ' active' : '');
+    b.type='button'; b.className='chip' + (selectedCategories.has(c.name) ? ' active' : '');
     b.textContent=c.name;
     b.addEventListener('click', ()=>{
-      row.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active'); selectedCategory = c.name;
+      if(selectedCategories.has(c.name)) selectedCategories.delete(c.name);
+      else selectedCategories.add(c.name);
+      b.classList.toggle('active');
     });
     row.appendChild(b);
   });
@@ -530,7 +540,7 @@ function renderDrinkCatChips(){
 /* ---------- drinks ---------- */
 async function loadDrinks(){
   try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,category,tasting_notes,is_public,created_at&order=created_at.desc', { headers: apiHeaders() });
+    const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,categories,tasting_notes,is_public,created_at&order=created_at.desc', { headers: apiHeaders() });
     if(!res.ok) throw new Error('Could not load drinks (' + res.status + ')');
     allDrinks = await res.json();
     renderDrinks();
@@ -549,7 +559,7 @@ function renderDrinks(){
   allDrinks.forEach(d=>{
     const card = document.createElement('div'); card.className='drink-card';
     const beanPill = d.bean ? '<span class="pill ' + (d.bean==='Romance'?'romance':'euphoria') + '">' + d.bean + '</span>' : '';
-    const catPill = d.category ? '<span class="pill cat">' + d.category + '</span>' : '';
+    const catPill = (d.categories||[]).map(c=>'<span class="pill cat">' + c + '</span>').join('');
     card.innerHTML =
       '<div class="thumb"><img alt=""></div>' +
       '<div class="body">' +
@@ -558,39 +568,16 @@ function renderDrinks(){
         '<p class="notes-line"></p>' +
         '<div class="card-actions">' +
           '<label class="mini-toggle"><input type="checkbox" ' + (d.is_public?'checked':'') + '><span class="switch"></span>On home</label>' +
-          '<div style="display:flex;gap:10px;">' +
-            '<button class="icon-btn matte">Remove bg</button>' +
-            '<button class="icon-btn del">Delete</button>' +
-          '</div>' +
+          '<button class="icon-btn del">Delete</button>' +
         '</div>' +
       '</div>';
     card.querySelector('img').src = d.image_url;
     card.querySelector('.name').textContent = d.name;
     card.querySelector('.notes-line').textContent = (d.tasting_notes||[]).join(', ');
     card.querySelector('.mini-toggle input').addEventListener('change', e=> patchDrink(d.id, { is_public: e.target.checked }));
-    card.querySelector('.matte').addEventListener('click', e=> removeBackground(d, e.target));
     card.querySelector('.del').addEventListener('click', ()=> deleteDrink(d.id, d.name));
     grid.appendChild(card);
   });
-}
-async function removeBackground(d, btn){
-  const original = btn.textContent;
-  btn.textContent = 'Working\u2026'; btn.disabled = true;
-  try{
-    const blob = await buMatteRemoteUrl(d.image_url);
-    const safe = d.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-    const path = safe + '-' + Date.now() + '-nobg.png';
-    const up = await fetch(SUPABASE_URL + '/storage/v1/object/drink-images/' + path, {
-      method:'POST', headers: apiHeaders({'Content-Type':'image/png'}), body: blob
-    });
-    if(!up.ok) throw new Error('Upload failed (' + up.status + ')');
-    const imageUrl = SUPABASE_URL + '/storage/v1/object/public/drink-images/' + path;
-    await patchDrink(d.id, { image_url: imageUrl });
-    loadDrinks();
-  } catch(err){
-    alert(friendlyError(err));
-    btn.textContent = original; btn.disabled = false;
-  }
 }
 async function patchDrink(id, body){
   try{
@@ -610,7 +597,7 @@ async function deleteDrink(id, name){
 }
 
 /* ---------- add drink form ---------- */
-let selectedType=null, selectedCategory=null, tags=[], selectedFile=null;
+let selectedType=null, selectedCategories=new Set(), tags=[], selectedFile=null;
 const tagWrap = document.getElementById('tagWrap'), tagText = document.getElementById('tagText');
 function renderTags(){
   tagWrap.querySelectorAll('.tag-chip').forEach(el=>el.remove());
@@ -626,19 +613,11 @@ tagText.addEventListener('keydown', e=>{
   if(e.key==='Enter'){ e.preventDefault(); const v=tagText.value.trim(); if(v){ tags.push(v); tagText.value=''; renderTags(); } }
 });
 const dropzone = document.getElementById('dropzone'), fileInput = document.getElementById('fileInput');
-async function handleFile(f){
+function handleFile(f){
   if(!f) return;
-  const dz = document.getElementById('dropText');
-  const original = dz.textContent;
-  dz.textContent = 'Removing background\u2026';
-  try{
-    selectedFile = await buMatteFile(f);
-  } catch(e){
-    selectedFile = f; // fall back to the original rather than block the upload
-  }
-  dz.textContent = original;
-  document.getElementById('previewImg').src = URL.createObjectURL(selectedFile);
-  document.getElementById('fileName').textContent = f.name + ' \u00b7 background removed';
+  selectedFile = f;
+  document.getElementById('previewImg').src = URL.createObjectURL(f);
+  document.getElementById('fileName').textContent = f.name;
   document.getElementById('previewWrap').style.display='block';
 }
 fileInput.addEventListener('change', e=> handleFile(e.target.files[0]));
@@ -670,12 +649,12 @@ document.getElementById('drinkForm').addEventListener('submit', async e=>{
     const ins = await fetch(SUPABASE_URL + '/rest/v1/drinks', {
       method:'POST', headers: apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
       body: JSON.stringify({ name, description, image_url:imageUrl, type:selectedType,
-        category:selectedCategory, tasting_notes:tags, is_public: document.getElementById('dPublic').checked })
+        categories:Array.from(selectedCategories), tasting_notes:tags, is_public: document.getElementById('dPublic').checked })
     });
     if(!ins.ok) throw new Error('Saving drink failed (' + ins.status + ')');
     msg.className='ok'; msg.textContent = name + ' was added.';
     e.target.reset();
-    selectedType=null; selectedCategory=null; tags=[]; selectedFile=null;
+    selectedType=null; selectedCategories=new Set(); tags=[]; selectedFile=null;
     document.querySelectorAll('#typeSelect .chip, #catSelect .chip').forEach(b=>b.classList.remove('active'));
     renderTags(); document.getElementById('previewWrap').style.display='none';
     loadDrinks();
