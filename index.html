@@ -39,11 +39,15 @@ body{background:var(--paper);}
 .result-strip{display:flex;gap:16px;flex-wrap:wrap;margin-top:22px;}
 .result-card{width:clamp(120px,26vw,150px);cursor:pointer;}
 .result-card .shot{
-  aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#fff;
-  box-shadow:0 12px 24px rgba(51,40,31,.12);transition:transform .4s cubic-bezier(.2,.85,.3,1),box-shadow .4s;
+  aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+  transition:transform .4s cubic-bezier(.2,.85,.3,1);
 }
-.result-card .shot img{width:100%;height:100%;object-fit:cover;}
-.result-card:hover .shot{transform:translateY(-5px);box-shadow:0 20px 34px rgba(51,40,31,.19);}
+.result-card .shot img{
+  max-width:88%;max-height:88%;width:auto;height:auto;object-fit:contain;
+  filter:drop-shadow(0 14px 22px rgba(51,40,31,.18));transition:filter .4s ease;
+}
+.result-card:hover .shot{transform:translateY(-5px);}
+.result-card:hover .shot img{filter:drop-shadow(0 20px 30px rgba(51,40,31,.26));}
 .result-card p{font-size:13px;margin:11px 0 0;color:var(--ink);text-align:center;}
 .result-empty{font-size:13.5px;color:var(--ink-faint);margin-top:20px;}
 
@@ -97,11 +101,11 @@ body{background:var(--paper);}
 .ig-layer{position:absolute;inset:0;}
 .ig-cell{position:absolute;top:0;left:0;will-change:transform;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .ig-cell img{
-  width:86%;height:86%;object-fit:cover;border-radius:10px;pointer-events:none;
-  box-shadow:0 14px 26px rgba(51,40,31,.16);
-  transition:transform .42s cubic-bezier(.2,.85,.3,1),box-shadow .42s;
+  max-width:82%;max-height:82%;width:auto;height:auto;object-fit:contain;pointer-events:none;
+  filter:drop-shadow(0 14px 22px rgba(51,40,31,.2));
+  transition:transform .42s cubic-bezier(.2,.85,.3,1),filter .42s;
 }
-.ig-cell:hover img{transform:scale(1.06);box-shadow:0 22px 36px rgba(51,40,31,.24);}
+.ig-cell:hover img{transform:scale(1.06);filter:drop-shadow(0 22px 32px rgba(51,40,31,.28));}
 .ig-hint{text-align:center;font-size:11.5px;color:var(--ink-faint);margin:18px 0 0;letter-spacing:.05em;}
 
 #stateMsg{text-align:center;color:var(--ink-soft);font-size:14px;padding:60px 0;}
@@ -270,9 +274,8 @@ function buildBrowse(){
    Steps are derived from the data that exists, so this keeps working
    as more drinks and categories are added.                            */
 const FINDER_STEPS = [
-  { key:'category', q:'Hot or cold?',      hint:'How would you like it served' },
-  { key:'type',     q:'What style?',        hint:'The kind of drink' },
-  { key:'bean',     q:'Which bean?',        hint:'Romance is warmer, Euphoria is brighter' }
+  { key:'category', q:'Hot or cold?', hint:'How would you like it served' },
+  { key:'type',     q:'What style?',  hint:'The kind of drink' }
 ];
 let finderPath = [];
 
@@ -280,7 +283,7 @@ function finderPool(){
   return DRINKS.filter(d=> finderPath.every(p=> d[p.key] === p.value));
 }
 function buildFinder(){
-  const hasAny = DRINKS.some(d=> d.category || d.type || d.bean);
+  const hasAny = DRINKS.some(d=> d.category || d.type);
   if(!hasAny) return;
   document.getElementById('finderSection').style.display='block';
   renderFinder();
