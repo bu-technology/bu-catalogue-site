@@ -32,8 +32,8 @@
 }
 .bu-detail-media{flex:1 1 44%;display:flex;align-items:center;justify-content:center;}
 .bu-detail-media img{
-  max-width:100%;max-height:56vh;object-fit:contain;border-radius:12px;
-  box-shadow:0 30px 60px rgba(51,40,31,.22);
+  max-width:100%;max-height:56vh;object-fit:contain;
+  filter:drop-shadow(0 30px 50px rgba(51,40,31,.28));
   animation:buRise .6s cubic-bezier(.2,.9,.3,1) both;
 }
 .bu-detail-body{flex:1 1 50%;animation:buRise .6s .07s cubic-bezier(.2,.9,.3,1) both;}
