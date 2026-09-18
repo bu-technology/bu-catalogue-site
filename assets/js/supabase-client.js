@@ -6,7 +6,7 @@ function buHeaders(){
 }
 
 async function fetchAllDrinks(){
-  const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,tasting_notes&order=created_at.asc', { headers: buHeaders() });
+  const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,categories,tasting_notes,is_vegan&order=created_at.asc', { headers: buHeaders() });
   if(!res.ok) throw new Error('Could not load drinks (' + res.status + ')');
   return res.json();
 }
@@ -21,7 +21,7 @@ async function fetchCatalogue(id){
 async function fetchDrinksByIds(ids){
   if(!ids || ids.length === 0) return [];
   const list = ids.map(id => '"' + id + '"').join(',');
-  const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=in.(' + list + ')&select=id,name,description,image_url,bean,type,categories,tasting_notes', { headers: buHeaders() });
+  const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=in.(' + list + ')&select=id,name,description,image_url,bean,type,categories,tasting_notes,is_vegan', { headers: buHeaders() });
   if(!res.ok) throw new Error('Could not load drinks (' + res.status + ')');
   const rows = await res.json();
   const byId = {};

@@ -229,6 +229,7 @@ main{max-width:1000px;margin:0 auto;padding:30px 20px 90px;}
           <div id="previewWrap"><img id="previewImg" alt=""><p id="fileName"></p></div>
         </div>
         <div class="field"><label class="switch-row"><input type="checkbox" id="dPublic"><span class="switch"></span> Show on home page</label></div>
+        <div class="field"><label class="switch-row"><input type="checkbox" id="dVegan"><span class="switch"></span> Vegan</label></div>
         <button type="submit" id="submitBtn">Add drink</button>
         <p id="formMsg"></p>
       </form>
@@ -540,7 +541,7 @@ function renderDrinkCatChips(){
 /* ---------- drinks ---------- */
 async function loadDrinks(){
   try{
-    const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,categories,tasting_notes,is_public,created_at&order=created_at.desc', { headers: apiHeaders() });
+    const res = await fetch(SUPABASE_URL + '/rest/v1/drinks?select=id,name,description,image_url,bean,type,categories,tasting_notes,is_public,is_vegan,created_at&order=created_at.desc', { headers: apiHeaders() });
     if(!res.ok) throw new Error('Could not load drinks (' + res.status + ')');
     allDrinks = await res.json();
     renderDrinks();
@@ -560,11 +561,12 @@ function renderDrinks(){
     const card = document.createElement('div'); card.className='drink-card';
     const beanPill = d.bean ? '<span class="pill ' + (d.bean==='Romance'?'romance':'euphoria') + '">' + d.bean + '</span>' : '';
     const catPill = (d.categories||[]).map(c=>'<span class="pill cat">' + c + '</span>').join('');
+    const veganPill = d.is_vegan ? '<span class="pill" style="background:rgba(91,122,91,.2);color:#4a6b4a;">Vegan</span>' : '';
     card.innerHTML =
       '<div class="thumb"><img alt=""></div>' +
       '<div class="body">' +
         '<p class="name"></p>' +
-        '<div class="pill-row">' + beanPill + '<span class="pill type">' + d.type + '</span>' + catPill + '</div>' +
+        '<div class="pill-row">' + beanPill + '<span class="pill type">' + d.type + '</span>' + catPill + veganPill + '</div>' +
         '<p class="notes-line"></p>' +
         '<div class="card-actions">' +
           '<label class="mini-toggle"><input type="checkbox" ' + (d.is_public?'checked':'') + '><span class="switch"></span>On home</label>' +
@@ -649,7 +651,9 @@ document.getElementById('drinkForm').addEventListener('submit', async e=>{
     const ins = await fetch(SUPABASE_URL + '/rest/v1/drinks', {
       method:'POST', headers: apiHeaders({'Content-Type':'application/json','Prefer':'return=representation'}),
       body: JSON.stringify({ name, description, image_url:imageUrl, type:selectedType,
-        categories:Array.from(selectedCategories), tasting_notes:tags, is_public: document.getElementById('dPublic').checked })
+        categories:Array.from(selectedCategories), tasting_notes:tags,
+        is_public: document.getElementById('dPublic').checked,
+        is_vegan: document.getElementById('dVegan').checked })
     });
     if(!ins.ok) throw new Error('Saving drink failed (' + ins.status + ')');
     msg.className='ok'; msg.textContent = name + ' was added.';

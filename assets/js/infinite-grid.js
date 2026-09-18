@@ -76,15 +76,24 @@ function buInfiniteGrid(opts){
     pool.forEach((node, key)=>{ if(!need.has(key)){ node.remove(); pool.delete(key); } });
   }
 
+  const IDLE_VX = 0.011, IDLE_VY = -0.007; // slow ambient drift when nobody's touching it
   let raf = null, prevT = null;
   function tick(t){
     if(prevT === null) prevT = t;
     let dt = t - prevT; prevT = t;
     if(dt > 60) dt = 60;
-    if(!dragging && (Math.abs(vx) > 0.002 || Math.abs(vy) > 0.002)){
+    if(!dragging){
+      const speed = Math.hypot(vx, vy);
+      if(speed > 0.02){
+        // still coasting from a throw or wheel nudge
+        const decay = Math.pow(FRICTION, dt/16.67);
+        vx *= decay; vy *= decay;
+      } else {
+        // ease smoothly into the ambient drift rather than snapping to it
+        vx += (IDLE_VX - vx) * 0.015;
+        vy += (IDLE_VY - vy) * 0.015;
+      }
       ox += vx*dt; oy += vy*dt;
-      const decay = Math.pow(FRICTION, dt/16.67);
-      vx *= decay; vy *= decay;
       render();
     }
     raf = requestAnimationFrame(tick);

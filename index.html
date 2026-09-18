@@ -176,7 +176,7 @@ async function boot(){
   try{
     const [catRes, drinkRes] = await Promise.all([
       fetch(SUPABASE_URL + '/rest/v1/catalogues?is_public=eq.true&select=id,name,drink_ids,background_style,bg_colors&order=created_at.desc', { headers: buHeaders() }),
-      fetch(SUPABASE_URL + '/rest/v1/drinks?is_public=eq.true&select=id,name,description,image_url,bean,type,categories,tasting_notes&order=created_at.desc', { headers: buHeaders() })
+      fetch(SUPABASE_URL + '/rest/v1/drinks?is_public=eq.true&select=id,name,description,image_url,bean,type,categories,tasting_notes,is_vegan&order=created_at.desc', { headers: buHeaders() })
     ]);
     if(!catRes.ok) throw new Error('Could not load menus (' + catRes.status + ')');
     if(!drinkRes.ok) throw new Error('Could not load drinks (' + drinkRes.status + ')');
