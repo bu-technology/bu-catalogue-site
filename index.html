@@ -145,13 +145,6 @@ footer img{width:96px;margin:0 auto;opacity:.4;}
     <div class="cat-scroll" id="catScroll"></div>
   </div>
 
-  <div class="section" id="browseSection" style="display:none;">
-    <div class="section-head"><h2>Browse</h2><p>By category or style.</p></div>
-    <hr class="rule-line">
-    <div class="browse-row" id="browseRow"></div>
-    <div class="result-strip" id="browseResults"></div>
-  </div>
-
   <!-- everything -->
   <div class="section" id="gridSection" style="display:none;">
     <div class="section-head"><h2>Everything we offer</h2><p id="gridCount"></p></div>
@@ -186,7 +179,6 @@ async function boot(){
     document.getElementById('stateMsg').style.display = 'none';
 
     if(DRINKS.length){
-      buildBrowse();
       buildFinder();
       document.getElementById('gridSection').style.display = 'block';
       document.getElementById('gridCount').textContent = DRINKS.length + (DRINKS.length===1?' drink':' drinks');
@@ -241,48 +233,45 @@ function renderResults(container, list, emptyMsg){
   });
 }
 
-/* ---------- browse by category / type ---------- */
-let browseFilter = null;
-function buildBrowse(){
-  const cats  = Array.from(new Set(DRINKS.flatMap(d=>d.categories||[])));
-  const types = Array.from(new Set(DRINKS.map(d=>d.type).filter(Boolean)));
-  const all = cats.concat(types.filter(t=>!cats.includes(t)));
-  if(!all.length) return;
-
-  document.getElementById('browseSection').style.display='block';
-  const row = document.getElementById('browseRow');
-  row.innerHTML='';
-  all.forEach(name=>{
-    const b = document.createElement('button');
-    b.className='browse-chip' + (browseFilter===name ? ' active' : '');
-    b.textContent = name;
-    b.addEventListener('click', ()=>{
-      browseFilter = (browseFilter === name) ? null : name;
-      buildBrowse();
-    });
-    row.appendChild(b);
-  });
-
-  const results = document.getElementById('browseResults');
-  if(!browseFilter){ results.innerHTML=''; return; }
-  renderResults(results, DRINKS.filter(d=> (d.categories||[]).includes(browseFilter) || d.type===browseFilter));
-}
-
 /* ---------- branching finder ----------
-   Steps are derived from the data that exists, so this keeps working
-   as more drinks and categories are added.                            */
-const FINDER_STEPS = [
-  { key:'category', q:'Hot or cold?', hint:'How would you like it served' },
-  { key:'type',     q:'What style?',  hint:'The kind of drink' }
+   A real one-question-at-a-time questionnaire: each step asks about a
+   single facet (temperature, caffeine, dairy, style, flavor) and only
+   offers the two or three values that still distinguish the remaining
+   drinks. A step is skipped once every drink left in the pool already
+   agrees on it, and the quiz stops early once the pool is small
+   enough that showing results beats another question. Normalizes a
+   known data typo so it doesn't fork into its own question.          */
+const CATEGORY_TYPO_FIX = { 'Caffienated':'Caffeinated' };
+function normCategories(d){
+  return (d.categories||[]).map(c => CATEGORY_TYPO_FIX[c] || c);
+}
+const FINDER_FACETS = [
+  { marker:'temp',   q:'Hot or cold?',        values:['Hot','Cold'] },
+  { marker:'caf',    q:'Caffeinated or not?', values:['Caffeinated','Non-Caffeinated'] },
+  { marker:'dairy',  q:'Dairy or non-dairy?', values:['Dairy','Non-Dairy'] },
+  { marker:'flavor', q:'Any flavor in mind?', values:['Fruity','Floral','Citrus','Caramel','Chocolate','Nutty','Spiced','Mint','Vanilla','Coconut','Ginger','Tiramisu','Classic / Plain'] }
 ];
-let finderPath = [];
+const RESULTS_THRESHOLD = 4; // stop asking once this few (or fewer) drinks remain
+let finderPath = []; // [{ marker, key:'categories'|'type', q, value }]
 
-function finderMatch(d, key, value){
-  if(key === 'category') return (d.categories||[]).includes(value);
-  return d[key] === value;
+function finderMatch(d, step, value){
+  return step.key === 'type' ? d.type === value : normCategories(d).includes(value);
 }
 function finderPool(){
-  return DRINKS.filter(d=> finderPath.every(p=> finderMatch(d, p.key, p.value)));
+  return DRINKS.filter(d=> finderPath.every(p=> finderMatch(d, p, p.value)));
+}
+function nextFinderStep(pool, used){
+  if(pool.length <= RESULTS_THRESHOLD) return null;
+  for(const f of FINDER_FACETS){
+    if(used.includes(f.marker)) continue;
+    const present = f.values.filter(v => pool.some(d => normCategories(d).includes(v)));
+    if(present.length > 1) return { marker:f.marker, q:f.q, key:'categories', options:present };
+  }
+  if(!used.includes('style')){
+    const types = Array.from(new Set(pool.map(d=>d.type).filter(Boolean)));
+    if(types.length > 1) return { marker:'style', q:'Any particular style?', key:'type', options:types };
+  }
+  return null;
 }
 function buildFinder(){
   const hasAny = DRINKS.some(d=> (d.categories&&d.categories.length) || d.type);
@@ -307,29 +296,22 @@ function renderFinder(){
   reset.style.display = finderPath.length ? 'inline-block' : 'none';
 
   const pool = finderPool();
-  // find the next step that actually splits the remaining drinks
-  const used = finderPath.map(p=>p.key);
-  let step = null, options = [];
-  for(const s of FINDER_STEPS){
-    if(used.includes(s.key)) continue;
-    const raw = s.key === 'category' ? pool.flatMap(d=>d.categories||[]) : pool.map(d=>d[s.key]);
-    const vals = Array.from(new Set(raw.filter(Boolean)));
-    if(vals.length > 1){ step = s; options = vals; break; }
-  }
+  const used = finderPath.map(p=>p.marker);
+  const step = nextFinderStep(pool, used);
 
   if(step){
     qEl.textContent = step.q;
     qEl.style.display='block';
     branches.innerHTML='';
-    options.forEach(v=>{
-      const count = pool.filter(d=> finderMatch(d, step.key, v)).length;
+    step.options.forEach(v=>{
+      const count = pool.filter(d=> finderMatch(d, step, v)).length;
       const b = document.createElement('button');
       b.className='branch-btn';
       b.innerHTML = '<span></span><small></small>';
       b.querySelector('span').textContent = v;
       b.querySelector('small').textContent = count + (count===1?' drink':' drinks');
       b.addEventListener('click', ()=>{
-        finderPath.push({ key: step.key, value: v });
+        finderPath.push({ marker: step.marker, key: step.key, q: step.q, value: v });
         renderFinder();
       });
       branches.appendChild(b);
