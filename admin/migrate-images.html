@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beverage Union — Migrate Photos</title>
+<style>
+@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Regular.woff2') format('woff2');font-weight:400;font-display:swap;}
+@font-face{font-family:'General Sans';src:url('../assets/fonts/GeneralSans-Semibold.woff2') format('woff2');font-weight:600;font-display:swap;}
+:root{
+  --paper:#F3EADC; --paper-warm:#EDE0CD; --camel:#C39B6D; --camel-deep:#A67C4E;
+  --ink:#33281F; --ink-soft:#6E5C4B; --ink-faint:#9A8874;
+  --orange:#B5541F; --sage:#5B7A5B;
+  --line: rgba(51,40,31,0.14); --line-strong: rgba(51,40,31,0.26);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:'General Sans',sans-serif;}
+#gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--paper);z-index:100;}
+.gate-box{width:min(88vw,340px);text-align:center;}
+.gate-box h1{font-size:22px;font-weight:600;margin:0 0 20px;}
+#passInput{width:100%;background:#fff;border:1px solid var(--line-strong);color:var(--ink);padding:12px 14px;border-radius:4px;font-size:15px;text-align:center;outline:none;}
+#gateSubmit{margin-top:14px;width:100%;padding:12px;background:var(--camel-deep);color:#fff;border:none;border-radius:4px;font-size:14px;font-weight:600;cursor:pointer;}
+#gateError{color:var(--orange);font-size:13px;margin-top:10px;min-height:16px;}
+#app{display:none;max-width:860px;margin:0 auto;padding:40px 24px 90px;}
+h1{font-size:24px;font-weight:600;margin:0 0 6px;}
+p.sub{color:var(--ink-soft);font-size:14px;margin:0 0 28px;max-width:580px;line-height:1.6;}
+.dropzone{border:1.5px dashed var(--line-strong);border-radius:10px;padding:40px 24px;text-align:center;cursor:pointer;position:relative;background:#fff;}
+.dropzone.drag{border-color:var(--camel-deep);background:rgba(195,155,109,0.1);}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.dropzone p{margin:0;color:var(--ink-soft);font-size:14px;}
+.dropzone strong{color:var(--ink);}
+.btn{background:var(--camel-deep);color:#fff;border:none;padding:12px 22px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-top:20px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn-ghost{background:transparent;border:1px solid var(--line-strong);color:var(--ink);padding:12px 22px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;margin-top:20px;margin-left:10px;}
+#summary{margin-top:28px;font-size:13px;color:var(--ink-soft);}
+table{width:100%;border-collapse:collapse;margin-top:18px;font-size:13px;}
+th{text-align:left;color:var(--ink-faint);font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--line);}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle;}
+td img{width:38px;height:38px;object-fit:contain;background:#fff;border-radius:4px;}
+.status{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;display:inline-block;}
+.status.pending{background:rgba(51,40,31,0.08);color:var(--ink-soft);}
+.status.uploading{background:rgba(195,155,109,0.25);color:var(--camel-deep);}
+.status.ok{background:rgba(91,122,91,0.18);color:#3d5c3d;}
+.status.fail{background:rgba(181,84,31,0.18);color:var(--orange);}
+.status.nomatch{background:rgba(51,40,31,0.06);color:var(--ink-faint);}
+#unmatchedDrinks{margin-top:10px;color:var(--ink-soft);font-size:13px;}
+#unmatchedDrinks li{margin-bottom:4px;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <h1>Enter the passcode</h1>
+    <input type="password" id="passInput" placeholder="••••••" autocomplete="off">
+    <button id="gateSubmit">Continue</button>
+    <p id="gateError"></p>
+  </div>
+</div>
+
+<div id="app">
+  <h1>Migrate drink photos</h1>
+  <p class="sub">Select every product photo at once (PNG/WEBP, cut out on a transparent background). Each one is trimmed to its content, flattened onto white, matched to a drink by filename, uploaded to storage, and that drink's <code>image_url</code> is updated — all in one pass. Drinks already using a real photo in <code>/assets/drinks/</code> are matched too, but you can skip re-uploading those if they already look right.</p>
+
+  <div class="dropzone" id="dropzone">
+    <input type="file" id="fileInput" accept="image/png,image/webp" multiple>
+    <p><strong>Click to choose files</strong>, or drag the whole folder of photos here.</p>
+  </div>
+
+  <button class="btn" id="runBtn" disabled>Migrate all</button>
+  <button class="btn-ghost" id="dryRunBtn" disabled>Preview matches only</button>
+
+  <div id="summary"></div>
+  <table id="resultsTable" style="display:none;">
+    <thead><tr><th></th><th>File</th><th>Matched drink</th><th>Status</th></tr></thead>
+    <tbody id="resultsBody"></tbody>
+  </table>
+  <div id="unmatchedDrinks"></div>
+</div>
+
+<script src="../assets/js/supabase-client.js"></script>
+<script>
+const PASSCODE = "BU@123";
+const gate = document.getElementById('gate');
+const app = document.getElementById('app');
+document.getElementById('gateSubmit').addEventListener('click', tryUnlock);
+document.getElementById('passInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+function tryUnlock(){
+  if(document.getElementById('passInput').value === PASSCODE){
+    sessionStorage.setItem('bu_admin_ok','1');
+    gate.style.display='none'; app.style.display='block';
+  } else { document.getElementById('gateError').textContent = "That's not it. Try again."; }
+}
+if(sessionStorage.getItem('bu_admin_ok') === '1'){ gate.style.display='none'; app.style.display='block'; }
+
+const BG = [255,255,255];
+let selectedFiles = [];
+let allDrinks = [];
+let plan = [];
+
+function normName(s){
+  s = s.toLowerCase();
+  s = s.replace(/coldbrew/g,'cold brew').replace(/cappucino|capuccinno/g,'cappuccino');
+  s = s.replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+  return s;
+}
+function similarity(a,b){
+  if(a===b) return 1;
+  const al=a.length, bl=b.length;
+  if(al===0||bl===0) return 0;
+  const dp = Array.from({length:al+1},()=>new Array(bl+1).fill(0));
+  for(let i=0;i<=al;i++) dp[i][0]=i;
+  for(let j=0;j<=bl;j++) dp[0][j]=j;
+  for(let i=1;i<=al;i++) for(let j=1;j<=bl;j++)
+    dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  const dist = dp[al][bl];
+  return 1 - dist/Math.max(al,bl);
+}
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', e => setFiles(Array.from(e.target.files)));
+dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', ()=> dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e=>{
+  e.preventDefault(); dropzone.classList.remove('drag');
+  const files = Array.from(e.dataTransfer.files).filter(f=> /image\/(png|webp)/.test(f.type));
+  setFiles(files);
+});
+
+async function setFiles(files){
+  selectedFiles = files;
+  document.getElementById('summary').textContent = files.length + ' file(s) selected. Loading drinks…';
+  try{
+    allDrinks = await fetchAllDrinks();
+  }catch(err){
+    document.getElementById('summary').textContent = 'Could not load drinks: ' + err.message;
+    return;
+  }
+  buildPlan();
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('dryRunBtn').disabled = false;
+}
+
+function buildPlan(){
+  const drinkNorms = allDrinks.map(d => ({ d, n: normName(d.name) }));
+  plan = selectedFiles.map(file => {
+    const base = file.name.replace(/\.[^.]+$/, '');
+    const n = normName(base);
+    let best = null, bestScore = 0;
+    drinkNorms.forEach(({d,n:dn})=>{
+      const score = n === dn ? 1 : similarity(n, dn);
+      if(score > bestScore){ bestScore = score; best = d; }
+    });
+    const drink = bestScore >= 0.72 ? best : null;
+    return { file, drink, status: drink ? 'pending' : 'nomatch' };
+  });
+  renderTable();
+  const matchedIds = new Set(plan.filter(p=>p.drink).map(p=>p.drink.id));
+  const unmatchedDrinks = allDrinks.filter(d => !matchedIds.has(d.id));
+  document.getElementById('summary').textContent =
+    plan.filter(p=>p.drink).length + ' of ' + plan.length + ' files matched to a drink. ' +
+    unmatchedDrinks.length + ' drink(s) have no matching photo in this batch.';
+  const ud = document.getElementById('unmatchedDrinks');
+  ud.innerHTML = unmatchedDrinks.length ? ('<p><strong>No photo found for:</strong></p><ul>' + unmatchedDrinks.map(d=>'<li>'+d.name+' <span style="color:var(--ink-faint)">('+d.id+')</span></li>').join('') + '</ul>') : '';
+}
+
+function renderTable(){
+  const tbl = document.getElementById('resultsTable');
+  const body = document.getElementById('resultsBody');
+  tbl.style.display = plan.length ? 'table' : 'none';
+  body.innerHTML = '';
+  plan.forEach((p,i)=>{
+    const tr = document.createElement('tr');
+    tr.id = 'row-' + i;
+    const thumbUrl = URL.createObjectURL(p.file);
+    tr.innerHTML = `<td><img src="${thumbUrl}"></td><td>${p.file.name}</td><td>${p.drink ? p.drink.name : '—'}</td><td><span class="status ${p.status}">${p.status}</span></td>`;
+    body.appendChild(tr);
+  });
+}
+function setStatus(i, status){
+  plan[i].status = status;
+  const row = document.getElementById('row-'+i);
+  if(row) row.querySelector('.status').outerHTML = `<span class="status ${status}">${status}</span>`;
+}
+
+document.getElementById('dryRunBtn').addEventListener('click', buildPlan);
+
+function processImage(file){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const c1 = document.createElement('canvas');
+      c1.width = img.width; c1.height = img.height;
+      const ctx1 = c1.getContext('2d');
+      ctx1.drawImage(img, 0, 0);
+      const data = ctx1.getImageData(0,0,c1.width,c1.height).data;
+      let minX=c1.width, minY=c1.height, maxX=0, maxY=0, found=false;
+      for(let y=0;y<c1.height;y+=2){
+        for(let x=0;x<c1.width;x+=2){
+          const a = data[(y*c1.width+x)*4+3];
+          if(a > 10){
+            found = true;
+            if(x<minX)minX=x; if(x>maxX)maxX=x;
+            if(y<minY)minY=y; if(y>maxY)maxY=y;
+          }
+        }
+      }
+      if(!found){ minX=0;minY=0;maxX=c1.width;maxY=c1.height; }
+      const pad = 20;
+      minX = Math.max(0, minX-pad); minY = Math.max(0, minY-pad);
+      maxX = Math.min(c1.width, maxX+pad); maxY = Math.min(c1.height, maxY+pad);
+      const w = maxX-minX, h = maxY-minY;
+      const c2 = document.createElement('canvas');
+      c2.width = w; c2.height = h;
+      const ctx2 = c2.getContext('2d');
+      ctx2.fillStyle = 'rgb(' + BG.join(',') + ')';
+      ctx2.fillRect(0,0,w,h);
+      ctx2.drawImage(c1, minX, minY, w, h, 0, 0, w, h);
+      c2.toBlob(blob => resolve(blob), 'image/jpeg', 0.9);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+document.getElementById('runBtn').addEventListener('click', async ()=>{
+  const runBtn = document.getElementById('runBtn');
+  runBtn.disabled = true; runBtn.textContent = 'Migrating…';
+  const matched = plan.filter(p=>p.drink);
+  let ok=0, fail=0;
+  for(let i=0;i<plan.length;i++){
+    const p = plan[i];
+    if(!p.drink) continue;
+    setStatus(i, 'uploading');
+    try{
+      const blob = await processImage(p.file);
+      const storagePath = p.drink.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') + '-' + Date.now() + '.jpg';
+      const upRes = await fetch(SUPABASE_URL + '/storage/v1/object/drink-images/' + storagePath, {
+        method:'POST',
+        headers: buHeaders({'Content-Type':'image/jpeg','x-upsert':'true'}),
+        body: blob
+      });
+      if(!upRes.ok) throw new Error('upload ' + upRes.status);
+      const imageUrl = SUPABASE_URL + '/storage/v1/object/public/drink-images/' + storagePath;
+      const patchRes = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=eq.' + p.drink.id, {
+        method:'PATCH',
+        headers: buHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
+        body: JSON.stringify({ image_url: imageUrl })
+      });
+      if(!patchRes.ok) throw new Error('update ' + patchRes.status);
+      setStatus(i, 'ok'); ok++;
+    } catch(err){
+      console.error(err);
+      setStatus(i, 'fail'); fail++;
+    }
+  }
+  document.getElementById('summary').textContent = `Done. ${ok} updated, ${fail} failed, ${plan.length - matched.length} had no matching drink.`;
+  runBtn.textContent = 'Migrate all'; runBtn.disabled = false;
+});
+</script>
+</body>
+</html>

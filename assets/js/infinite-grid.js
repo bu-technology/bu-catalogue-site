@@ -19,8 +19,8 @@ function buInfiniteGrid(opts){
   let cell = 0, gap = 0, cellW = 0, cellH = 0;
   function measure(){
     const w = viewport.clientWidth;
-    cell = w < 480 ? 128 : (w < 820 ? 168 : 210);
-    gap  = w < 480 ? 18 : 30;
+    cell = w < 480 ? 160 : (w < 820 ? 210 : 260);
+    gap  = w < 480 ? 20 : 34;
     cellW = cell + gap;
     cellH = cell + gap;
   }
