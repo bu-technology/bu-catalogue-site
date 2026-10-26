@@ -43,8 +43,12 @@ td img{width:38px;height:38px;object-fit:contain;background:#fff;border-radius:4
 .status.ok{background:rgba(91,122,91,0.18);color:#3d5c3d;}
 .status.fail{background:rgba(181,84,31,0.18);color:var(--orange);}
 .status.nomatch{background:rgba(51,40,31,0.06);color:var(--ink-faint);}
+.status.skip{background:rgba(51,40,31,0.06);color:var(--ink-faint);}
 #unmatchedDrinks{margin-top:10px;color:var(--ink-soft);font-size:13px;}
 #unmatchedDrinks li{margin-bottom:4px;}
+.err-detail{color:var(--orange);font-size:11.5px;margin-top:2px;max-width:260px;}
+select.match-select{font-size:12.5px;padding:4px 6px;border-radius:4px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);max-width:220px;}
+.skip-chk{margin-right:6px;vertical-align:middle;}
 </style>
 </head>
 <body>
@@ -72,7 +76,7 @@ td img{width:38px;height:38px;object-fit:contain;background:#fff;border-radius:4
 
   <div id="summary"></div>
   <table id="resultsTable" style="display:none;">
-    <thead><tr><th></th><th>File</th><th>Matched drink</th><th>Status</th></tr></thead>
+    <thead><tr><th></th><th>File</th><th>Matched drink (change if wrong)</th><th>Status</th></tr></thead>
     <tbody id="resultsBody"></tbody>
   </table>
   <div id="unmatchedDrinks"></div>
@@ -142,6 +146,16 @@ async function setFiles(files){
   document.getElementById('dryRunBtn').disabled = false;
 }
 
+function updateSummary(){
+  const matchedIds = new Set(plan.filter(p=>p.drink).map(p=>p.drink.id));
+  const unmatchedDrinks = allDrinks.filter(d => !matchedIds.has(d.id));
+  document.getElementById('summary').textContent =
+    plan.filter(p=>p.drink).length + ' of ' + plan.length + ' files currently matched to a drink. ' +
+    unmatchedDrinks.length + ' drink(s) still have no matching photo — pick one manually in the table below if you have the right file, or leave it for later.';
+  const ud = document.getElementById('unmatchedDrinks');
+  ud.innerHTML = unmatchedDrinks.length ? ('<p><strong>No photo assigned to:</strong></p><ul>' + unmatchedDrinks.map(d=>'<li>'+d.name+'</li>').join('') + '</ul>') : '';
+}
+
 function buildPlan(){
   const drinkNorms = allDrinks.map(d => ({ d, n: normName(d.name) }));
   plan = selectedFiles.map(file => {
@@ -153,16 +167,10 @@ function buildPlan(){
       if(score > bestScore){ bestScore = score; best = d; }
     });
     const drink = bestScore >= 0.72 ? best : null;
-    return { file, drink, status: drink ? 'pending' : 'nomatch' };
+    return { file, drink, status: drink ? 'pending' : 'nomatch', errorMsg: '' };
   });
   renderTable();
-  const matchedIds = new Set(plan.filter(p=>p.drink).map(p=>p.drink.id));
-  const unmatchedDrinks = allDrinks.filter(d => !matchedIds.has(d.id));
-  document.getElementById('summary').textContent =
-    plan.filter(p=>p.drink).length + ' of ' + plan.length + ' files matched to a drink. ' +
-    unmatchedDrinks.length + ' drink(s) have no matching photo in this batch.';
-  const ud = document.getElementById('unmatchedDrinks');
-  ud.innerHTML = unmatchedDrinks.length ? ('<p><strong>No photo found for:</strong></p><ul>' + unmatchedDrinks.map(d=>'<li>'+d.name+' <span style="color:var(--ink-faint)">('+d.id+')</span></li>').join('') + '</ul>') : '';
+  updateSummary();
 }
 
 function renderTable(){
@@ -170,18 +178,37 @@ function renderTable(){
   const body = document.getElementById('resultsBody');
   tbl.style.display = plan.length ? 'table' : 'none';
   body.innerHTML = '';
+  const sortedDrinks = allDrinks.slice().sort((a,b)=> a.name.localeCompare(b.name));
   plan.forEach((p,i)=>{
     const tr = document.createElement('tr');
     tr.id = 'row-' + i;
     const thumbUrl = URL.createObjectURL(p.file);
-    tr.innerHTML = `<td><img src="${thumbUrl}"></td><td>${p.file.name}</td><td>${p.drink ? p.drink.name : '—'}</td><td><span class="status ${p.status}">${p.status}</span></td>`;
+    const options = ['<option value="">— skip / no match —</option>']
+      .concat(sortedDrinks.map(d => `<option value="${d.id}" ${p.drink && p.drink.id===d.id ? 'selected' : ''}>${d.name}</option>`));
+    tr.innerHTML = `<td><img src="${thumbUrl}"></td><td>${p.file.name}</td>
+      <td><select class="match-select" data-i="${i}">${options.join('')}</select></td>
+      <td><span class="status ${p.status}">${p.status}</span><div class="err-detail"></div></td>`;
     body.appendChild(tr);
   });
+  body.querySelectorAll('select.match-select').forEach(sel=>{
+    sel.addEventListener('change', ()=>{
+      const i = Number(sel.dataset.i);
+      const id = sel.value;
+      plan[i].drink = id ? allDrinks.find(d=>d.id===id) : null;
+      plan[i].status = plan[i].drink ? 'pending' : 'nomatch';
+      setStatus(i, plan[i].status);
+      updateSummary();
+    });
+  });
 }
-function setStatus(i, status){
+function setStatus(i, status, detail){
   plan[i].status = status;
+  plan[i].errorMsg = detail || '';
   const row = document.getElementById('row-'+i);
-  if(row) row.querySelector('.status').outerHTML = `<span class="status ${status}">${status}</span>`;
+  if(row){
+    row.querySelector('.status').outerHTML = `<span class="status ${status}">${status}</span>`;
+    row.querySelector('.err-detail').textContent = detail || '';
+  }
 }
 
 document.getElementById('dryRunBtn').addEventListener('click', buildPlan);
@@ -224,6 +251,10 @@ function processImage(file){
   });
 }
 
+async function bodyText(res){
+  try{ const t = await res.text(); return t ? t.slice(0,180) : ''; } catch(e){ return ''; }
+}
+
 document.getElementById('runBtn').addEventListener('click', async ()=>{
   const runBtn = document.getElementById('runBtn');
   runBtn.disabled = true; runBtn.textContent = 'Migrating…';
@@ -235,27 +266,34 @@ document.getElementById('runBtn').addEventListener('click', async ()=>{
     setStatus(i, 'uploading');
     try{
       const blob = await processImage(p.file);
-      const storagePath = p.drink.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') + '-' + Date.now() + '.jpg';
+      const storagePath = p.drink.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') + '-' + Date.now() + '-' + i + '.jpg';
       const upRes = await fetch(SUPABASE_URL + '/storage/v1/object/drink-images/' + storagePath, {
         method:'POST',
         headers: buHeaders({'Content-Type':'image/jpeg','x-upsert':'true'}),
         body: blob
       });
-      if(!upRes.ok) throw new Error('upload ' + upRes.status);
+      if(!upRes.ok){
+        const detail = await bodyText(upRes);
+        throw new Error('Upload failed (' + upRes.status + ')' + (detail ? ': ' + detail : ''));
+      }
       const imageUrl = SUPABASE_URL + '/storage/v1/object/public/drink-images/' + storagePath;
       const patchRes = await fetch(SUPABASE_URL + '/rest/v1/drinks?id=eq.' + p.drink.id, {
         method:'PATCH',
         headers: buHeaders({'Content-Type':'application/json','Prefer':'return=minimal'}),
         body: JSON.stringify({ image_url: imageUrl })
       });
-      if(!patchRes.ok) throw new Error('update ' + patchRes.status);
+      if(!patchRes.ok){
+        const detail = await bodyText(patchRes);
+        throw new Error('Database update failed (' + patchRes.status + ')' + (detail ? ': ' + detail : ''));
+      }
       setStatus(i, 'ok'); ok++;
     } catch(err){
       console.error(err);
-      setStatus(i, 'fail'); fail++;
+      setStatus(i, 'fail', err && err.message ? err.message : String(err));
+      fail++;
     }
   }
-  document.getElementById('summary').textContent = `Done. ${ok} updated, ${fail} failed, ${plan.length - matched.length} had no matching drink.`;
+  document.getElementById('summary').textContent = `Done. ${ok} updated, ${fail} failed, ${plan.length - matched.length} skipped (no drink chosen).`;
   runBtn.textContent = 'Migrate all'; runBtn.disabled = false;
 });
 </script>
